@@ -1,4 +1,4 @@
-package com.example.lostandfound.views
+package com.example.lostandfound.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,10 +9,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun LostThread(){
+fun Profile(){
     Column(modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally){
-        Text("Lost page coming soon ...")
+        Text("Profile view coming soon ...")
     }
 }
