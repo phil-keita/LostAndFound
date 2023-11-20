@@ -1,7 +1,7 @@
 package com.example.lostandfound.data
 
 import com.example.lostandfound.model.FindPost
-import com.example.lostandfound.model.LostPost
+import com.example.lostandfound.model.FoundPost
 
 class DummyPosts (
 
@@ -19,16 +19,16 @@ class DummyPosts (
             )
     }
 
-    fun getDummyLostPosts(): List<LostPost>{
+    fun getDummyFoundPosts(): List<FoundPost>{
         return listOf(
-            LostPost("Earbuds", 0, "HBL Library"),
-            LostPost("Earbuds", 0, "HBL Library"),
-            LostPost("Earbuds", 0, "HBL Library"),
-            LostPost("Earbuds", 0, "HBL Library"),
-            LostPost("Earbuds", 0, "HBL Library"),
-            LostPost("Earbuds", 0, "HBL Library"),
-            LostPost("Earbuds", 0, "HBL Library"),
-            LostPost("Earbuds", 0, "HBL Library")
+            FoundPost("Earbuds", 0, "HBL Library"),
+            FoundPost("Earbuds", 0, "HBL Library"),
+            FoundPost("Earbuds", 0, "HBL Library"),
+            FoundPost("Earbuds", 0, "HBL Library"),
+            FoundPost("Earbuds", 0, "HBL Library"),
+            FoundPost("Earbuds", 0, "HBL Library"),
+            FoundPost("Earbuds", 0, "HBL Library"),
+            FoundPost("Earbuds", 0, "HBL Library")
         )
     }
 }

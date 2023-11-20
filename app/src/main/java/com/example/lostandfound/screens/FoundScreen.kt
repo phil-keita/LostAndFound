@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -28,12 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lostandfound.R
 import com.example.lostandfound.data.DummyPosts
-import com.example.lostandfound.model.FindPost
-import com.example.lostandfound.model.LostPost
+import com.example.lostandfound.model.FoundPost
 
 @Composable
-fun LostThread(){
-    val postList: List<LostPost> = DummyPosts().getDummyLostPosts()
+fun FoundThread(){
+    val postList: List<FoundPost> = DummyPosts().getDummyFoundPosts()
     LazyColumn(modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally){
@@ -41,14 +39,14 @@ fun LostThread(){
 //                showPost(post = post)
 //            }
         items(postList){ post ->
-            showLostPost(post = post)
+            showFoundPost(post = post)
         }
     }
 }
 
 
 @Composable
-fun showLostPost(post: LostPost){
+fun showFoundPost(post: FoundPost){
     Card(
         modifier = Modifier.padding(20.dp)
     ){
@@ -88,6 +86,6 @@ fun showLostPost(post: LostPost){
 }
 @Preview
 @Composable
-fun LostThreadPreview() {
-    LostThread()
+fun FoundThreadPreview() {
+    FoundThread()
 }

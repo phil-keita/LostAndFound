@@ -44,7 +44,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.lostandfound.screens.Chat
 import com.example.lostandfound.screens.FindThread
-import com.example.lostandfound.screens.LostThread
+import com.example.lostandfound.screens.FoundThread
 import com.example.lostandfound.screens.Profile
 
 
@@ -52,7 +52,7 @@ sealed class NavScreens(val route: String) {
     object Login : NavScreens(route = "Login")
     object SignUp : NavScreens(route = "SignUp")
     object Find : NavScreens(route = "Find")
-    object Lost : NavScreens(route = "Lost")
+    object Found : NavScreens(route = "Found")
     object Chat : NavScreens(route = "Chat")
     object Profile : NavScreens(route = "Profile")
 }
@@ -63,7 +63,7 @@ sealed class NavScreens(val route: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 fun LAFApp(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
-    val items = listOf(NavScreens.Find, NavScreens.Lost, NavScreens.Chat, NavScreens.Profile)
+    val items = listOf(NavScreens.Find, NavScreens.Found, NavScreens.Chat, NavScreens.Profile)
     var state by remember { mutableIntStateOf(0) }
     Scaffold(
         bottomBar = {
@@ -86,7 +86,7 @@ fun LAFApp(modifier: Modifier = Modifier) {
                                 icon = {
                                     when(screen.route){
                                         NavScreens.Find.route -> Icon(Icons.Filled.Search, contentDescription = null)
-                                        NavScreens.Lost.route -> Icon(Icons.Filled.LocationOn, contentDescription = null)
+                                        NavScreens.Found.route -> Icon(Icons.Filled.LocationOn, contentDescription = null)
                                         NavScreens.Chat.route -> Icon(Icons.Filled.Email, contentDescription = null)
                                         NavScreens.Profile.route -> Icon(Icons.Filled.Person, contentDescription = null)
                                     }
@@ -101,7 +101,7 @@ fun LAFApp(modifier: Modifier = Modifier) {
     ) { innerPadding ->
         NavHost(navController, startDestination = NavScreens.Find.route, Modifier.padding(innerPadding)) {
             composable(NavScreens.Find.route) { FindThread()  }
-            composable(NavScreens.Lost.route) { LostThread()}
+            composable(NavScreens.Found.route) { FoundThread()}
             composable(NavScreens.Chat.route) { Chat() }
             composable(NavScreens.Profile.route) { Profile()}
         }
