@@ -57,7 +57,7 @@ import com.example.lostandfound.presentation.sign_in.GoogleAuthUiClient
 import com.example.lostandfound.screens.Chat
 import com.example.lostandfound.screens.FindThread
 import com.example.lostandfound.screens.FoundThread
-import com.example.lostandfound.screens.Profile
+import com.example.lostandfound.screens.ProfileScreen
 import com.example.lostandfound.screens.SignInScreen
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
@@ -89,44 +89,51 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context) {
     val coroutineScope = rememberCoroutineScope()
     val items = listOf(NavScreens.Find, NavScreens.Found, NavScreens.Chat, NavScreens.Profile)
     var state by remember { mutableIntStateOf(0) }
+    var userSignedIn by remember {
+        mutableStateOf(false)
+    }
     Scaffold(
         bottomBar = {
-            BottomAppBar {
-                Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom) {
-                    TabRow(selectedTabIndex = state, modifier = Modifier.fillMaxSize()) {
-                        items.forEachIndexed { index, screen ->
-                            Tab(
-                                selected = state == index,
-                                onClick = {
-                                    state = index
-                                    navController.navigate(screen.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
+            if(userSignedIn){
+                BottomAppBar {
+                    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom) {
+                        TabRow(selectedTabIndex = state, modifier = Modifier.fillMaxSize()) {
+                            items.forEachIndexed { index, screen ->
+                                Tab(
+                                    selected = state == index,
+                                    onClick = {
+                                        state = index
+                                        navController.navigate(screen.route) {
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
                                         }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                icon = {
-                                    when(screen.route){
-                                        NavScreens.Find.route -> Icon(Icons.Filled.Search, contentDescription = null)
-                                        NavScreens.Found.route -> Icon(Icons.Filled.LocationOn, contentDescription = null)
-                                        NavScreens.Chat.route -> Icon(Icons.Filled.Email, contentDescription = null)
-                                        NavScreens.Profile.route -> Icon(Icons.Filled.Person, contentDescription = null)
-                                    }
-                                },
-                                text = { Text(text = screen.route) }
-                            )
+                                    },
+                                    icon = {
+                                        when(screen.route){
+                                            NavScreens.Find.route -> Icon(Icons.Filled.Search, contentDescription = null)
+                                            NavScreens.Found.route -> Icon(Icons.Filled.LocationOn, contentDescription = null)
+                                            NavScreens.Chat.route -> Icon(Icons.Filled.Email, contentDescription = null)
+                                            NavScreens.Profile.route -> Icon(Icons.Filled.Person, contentDescription = null)
+                                        }
+                                    },
+                                    text = { Text(text = screen.route) }
+                                )
+                            }
                         }
                     }
                 }
             }
+
         }
     ) { innerPadding ->
         NavHost(navController, startDestination = NavScreens.SignUp.route, Modifier.padding(innerPadding)) {
             composable(NavScreens.SignUp.route){
                 LaunchedEffect(key1 = Unit) {
                     if(googleAuthUiClient.getSignedInUser() != null) {
+                        userSignedIn = true
                         navController.navigate("profile")
                     }
                 }
@@ -145,11 +152,13 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context) {
                 )
                 LaunchedEffect(key1 = vmState.isSignInSuccessful) {
                     if(vmState.isSignInSuccessful) {
+                        userSignedIn = true
                         Toast.makeText(
                             context,
                             "Sign in successful",
                             Toast.LENGTH_LONG
                         ).show()
+
 
                         navController.navigate(NavScreens.Profile.route)
                         VM.resetState()
@@ -171,7 +180,25 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context) {
             composable(NavScreens.Find.route) { FindThread()  }
             composable(NavScreens.Found.route) { FoundThread()}
             composable(NavScreens.Chat.route) { Chat() }
-            composable(NavScreens.Profile.route) { Profile()}
+            composable(NavScreens.Profile.route) {
+                ProfileScreen(
+                    userData = googleAuthUiClient.getSignedInUser(),
+                    onSignOut = {
+                        coroutineScope.launch {
+                            googleAuthUiClient.signOut()
+                            userSignedIn = false
+                            Toast.makeText(
+                                context,
+                                "Signed out",
+                                Toast.LENGTH_LONG
+                            ).show()
+
+                            navController.popBackStack()
+                        }
+                    }
+                )
+                state = 3
+            }
         }
     }
 }
