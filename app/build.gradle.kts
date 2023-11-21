@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -50,8 +51,16 @@ android {
 }
 
 dependencies {
+    implementation("androidx.credentials:credentials:1.2.0")
 
-    implementation("androidx.core:core-ktx:1.9.0")
+    // optional - needed for credentials support from play services, for devices running
+    // Android 13 and below.
+    implementation("androidx.credentials:credentials-play-services-auth:1.2.0")
+    implementation ("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("com.google.firebase:firebase-auth:22.3.0")
+    implementation ("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.activity:activity-compose:1.8.0")
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
@@ -59,9 +68,9 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation ("androidx.navigation:navigation-compose:2.4.0-alpha10")
+    implementation ("androidx.navigation:navigation-compose:2.7.5")
     // viewModel
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     // Kotlin serialization
@@ -78,4 +87,6 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+
 }

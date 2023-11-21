@@ -1,6 +1,12 @@
 package com.example.lostandfound
 
 import android.annotation.SuppressLint
+import android.app.Activity.RESULT_OK
+import android.content.Context
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,21 +37,30 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.lostandfound.presentation.sign_in.GoogleAuthUiClient
 import com.example.lostandfound.screens.Chat
 import com.example.lostandfound.screens.FindThread
 import com.example.lostandfound.screens.FoundThread
 import com.example.lostandfound.screens.Profile
+import com.example.lostandfound.screens.SignInScreen
+import com.google.android.gms.auth.api.identity.Identity
+import kotlinx.coroutines.launch
 
 
 sealed class NavScreens(val route: String) {
@@ -61,8 +76,17 @@ sealed class NavScreens(val route: String) {
 @Composable
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
-fun LAFApp(modifier: Modifier = Modifier) {
+fun LAFApp(modifier: Modifier = Modifier, context : Context) {
+    val googleAuthUiClient by lazy {
+        GoogleAuthUiClient(
+            context = context,
+            oneTapClient = Identity.getSignInClient(context)
+        )
+    }
     val navController = rememberNavController()
+    val VM = viewModel<LafViewModel>()
+    val vmState by VM.state.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
     val items = listOf(NavScreens.Find, NavScreens.Found, NavScreens.Chat, NavScreens.Profile)
     var state by remember { mutableIntStateOf(0) }
     Scaffold(
@@ -99,7 +123,51 @@ fun LAFApp(modifier: Modifier = Modifier) {
             }
         }
     ) { innerPadding ->
-        NavHost(navController, startDestination = NavScreens.Find.route, Modifier.padding(innerPadding)) {
+        NavHost(navController, startDestination = NavScreens.SignUp.route, Modifier.padding(innerPadding)) {
+            composable(NavScreens.SignUp.route){
+                LaunchedEffect(key1 = Unit) {
+                    if(googleAuthUiClient.getSignedInUser() != null) {
+                        navController.navigate("profile")
+                    }
+                }
+                val launcher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.StartIntentSenderForResult(),
+                    onResult = { result ->
+                        if(result.resultCode == RESULT_OK) {
+                            coroutineScope.launch {
+                                val signInResult = googleAuthUiClient.signInWithIntent(
+                                    intent = result.data ?: return@launch
+                                )
+                                VM.onSignInResult(signInResult)
+                            }
+                        }
+                    }
+                )
+                LaunchedEffect(key1 = vmState.isSignInSuccessful) {
+                    if(vmState.isSignInSuccessful) {
+                        Toast.makeText(
+                            context,
+                            "Sign in successful",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                        navController.navigate(NavScreens.Profile.route)
+                        VM.resetState()
+                    }
+                }
+                SignInScreen(state = vmState,
+                    onSignInClick = {
+                        coroutineScope.launch {
+                            val signInIntentSender = googleAuthUiClient.signIn()
+                            launcher.launch(
+                                IntentSenderRequest.Builder(
+                                    signInIntentSender ?: return@launch
+                                ).build()
+                            )
+                        }
+                    }
+                )
+            }
             composable(NavScreens.Find.route) { FindThread()  }
             composable(NavScreens.Found.route) { FoundThread()}
             composable(NavScreens.Chat.route) { Chat() }
