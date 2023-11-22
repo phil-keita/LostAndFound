@@ -22,11 +22,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lostandfound.data.DummyPosts
-import com.example.lostandfound.model.FindPost
+import com.example.lostandfound.model.LostPost
 
 @Composable
-fun FindThread(){
-    val postList: List<FindPost> = DummyPosts().getDummyFindPosts()
+fun LostThread(){
+    val postList: List<LostPost> = DummyPosts().getDummyLostPosts()
     LazyColumn(modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally){
@@ -34,13 +34,13 @@ fun FindThread(){
 //                showPost(post = post)
 //            }
         items(postList){ post ->
-            showFindPost(post = post)
+            showLostPost(post = post)
         }
     }
 }
 
 @Composable
-fun showFindPost(post: FindPost){
+fun showLostPost(post: LostPost){
     Card(
         modifier = Modifier.padding(20.dp)
     ){
@@ -85,5 +85,5 @@ fun showFindPost(post: FindPost){
 @Preview
 @Composable
 fun FindThreadPreview() {
-    FindThread()
+    LostThread()
 }
