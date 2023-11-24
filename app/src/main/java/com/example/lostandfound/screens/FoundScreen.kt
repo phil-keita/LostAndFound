@@ -2,6 +2,7 @@ package com.example.lostandfound.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,7 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,14 +36,28 @@ import com.example.lostandfound.model.FoundPost
 @Composable
 fun FoundThread(){
     val postList: List<FoundPost> = DummyPosts().getDummyFoundPosts()
-    LazyColumn(modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally){
+    Box(modifier = Modifier.fillMaxSize()){
+        LazyColumn(modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally){
 //            postList.forEach(){ post ->
 //                showPost(post = post)
 //            }
-        items(postList){ post ->
-            showFoundPost(post = post)
+            items(postList){ post ->
+                showFoundPost(post = post)
+            }
+        }
+        Button(
+            onClick = { /*TODO*/ },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+                .height(0.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 30.dp)
+
+            ) {
+            Icon(painterResource(id = R.drawable.baseline_add_24), contentDescription = null)
+            Text(text="Report")
         }
     }
 }
@@ -63,7 +81,9 @@ fun showFoundPost(post: FoundPost){
                     color = Color.Gray)
             }
             Image(painter = painterResource(id = R.drawable.earbuds), contentDescription = null,
-                modifier = Modifier.fillMaxWidth().height(100.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
                 contentScale = ContentScale.Crop)
             Row(modifier = Modifier.padding(8.dp)){
                 Text(text= "Found: ${post.item}",
