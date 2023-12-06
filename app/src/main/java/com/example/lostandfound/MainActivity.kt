@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.example.lostandfound.screens.FoundThread
+import com.example.lostandfound.screens.ShowMap
 import com.example.lostandfound.ui.theme.LostAndFoundTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,7 +22,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LAFApp(modifier = Modifier, applicationContext)
+//                    LAFApp(modifier = Modifier, applicationContext)
+//                    FoundThread()
+                    ShowMap()
                 }
             }
         }
