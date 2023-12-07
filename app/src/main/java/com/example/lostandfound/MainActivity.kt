@@ -16,6 +16,7 @@ import com.google.firebase.firestore.firestore
 class MainActivity : ComponentActivity() {
     private val db = Firebase.firestore
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
