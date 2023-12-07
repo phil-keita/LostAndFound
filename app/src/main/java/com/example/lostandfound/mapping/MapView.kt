@@ -36,7 +36,6 @@ fun ShowMap(modifier: Modifier = Modifier) {
 
     GoogleMap(
         modifier = modifier
-            .fillMaxSize()
             .height(300.dp),
         cameraPositionState = cameraPosition
     ){
