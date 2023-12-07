@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,6 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
@@ -50,6 +53,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.lostandfound.R
+import com.example.lostandfound.mapping.ShowMap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -219,6 +223,20 @@ fun foundPostCreationForm(){
             onValueChange = {additionalInfo = it},
             modifier = Modifier.width(textFieldSize)
         )
+        // Sumbit and Cancel buttons
+//        Spacer(modifier = Modifier.height(50.dp))
+        Row(modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceAround){
+            Button(onClick = {},
+                modifier = Modifier.padding(16.dp)
+            ){
+                Text("Cancel")
+            }
+            Button(onClick = {},
+                modifier = Modifier.padding(16.dp)){
+                Text("Post")
+            }
+        }
     }
 
 }

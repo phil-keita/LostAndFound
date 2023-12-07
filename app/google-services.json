@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1026600270141",
+    "project_id": "login-register-firebase-86e06",
+    "storage_bucket": "login-register-firebase-86e06.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1026600270141:android:82f6e98e6f5bbdc20c6d54",
+        "android_client_info": {
+          "package_name": "com.example.lostandfound"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1026600270141-h08hp36s9sbqq8h07ejvrnq2c8pn1jg8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.lostandfound",
+            "certificate_hash": "a689267e5fdd1eeb52010b073bb9d769b12034bc"
+          }
+        },
+        {
+          "client_id": "1026600270141-ib6vedvvgof4449vobg3oe0ag9qm5kk1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0yQ0a8KjrGjAztoe-fCSDx6YQqZD4aHQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1026600270141-ib6vedvvgof4449vobg3oe0ag9qm5kk1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

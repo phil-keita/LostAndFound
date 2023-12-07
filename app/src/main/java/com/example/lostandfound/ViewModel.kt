@@ -7,6 +7,11 @@ import com.example.lostandfound.presentation.sign_in.SignInState
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+
+//data class UIState(
+//
+//)
+
 class LafViewModel: ViewModel(){
     private val _state = MutableStateFlow(SignInState())
     val state = _state.asStateFlow()
