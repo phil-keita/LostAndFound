@@ -45,6 +45,7 @@ import com.example.lostandfound.screens.FoundThread
 import com.example.lostandfound.screens.ProfileScreen
 import com.example.lostandfound.screens.SignInScreen
 import com.google.android.gms.auth.api.identity.Identity
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 
 
@@ -61,7 +62,7 @@ sealed class NavScreens(val route: String) {
 @Composable
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
-fun LAFApp(modifier: Modifier = Modifier, context : Context) {
+fun LAFApp(modifier: Modifier = Modifier, context : Context, db : FirebaseFirestore) {
     val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
             context = context,
@@ -73,7 +74,7 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context) {
     val vmState by VM.state.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val items = listOf(NavScreens.Find, NavScreens.Found, NavScreens.Chat, NavScreens.Profile)
-    var state by remember { mutableIntStateOf(0) }
+    var state by remember { mutableIntStateOf(3) }
     var userSignedIn by remember {
         mutableStateOf(false)
     }
@@ -143,8 +144,6 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context) {
                             "Sign in successful",
                             Toast.LENGTH_LONG
                         ).show()
-
-
                         navController.navigate(NavScreens.Profile.route)
                         VM.resetState()
                     }
@@ -164,7 +163,7 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context) {
             }
             composable(NavScreens.Find.route) { LostThread()  }
             composable(NavScreens.Found.route) { FoundThread()}
-            composable(NavScreens.Chat.route) { Chat() }
+            composable(NavScreens.Chat.route) { Chat(userData = googleAuthUiClient.getSignedInUser()) }
             composable(NavScreens.Profile.route) {
                 ProfileScreen(
                     userData = googleAuthUiClient.getSignedInUser(),
@@ -177,12 +176,11 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context) {
                                 "Signed out",
                                 Toast.LENGTH_LONG
                             ).show()
-
                             navController.popBackStack()
                         }
                     }
                 )
-                state = 3
+//                state = 3
             }
         }
     }

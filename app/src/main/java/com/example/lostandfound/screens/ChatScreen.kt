@@ -7,12 +7,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.lostandfound.presentation.sign_in.UserData
 
 @Composable
-fun Chat(){
-    Column(modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally){
-        Text("Chat screen coming soon ...")
-    }
+fun Chat(userData: UserData?){
+
+
 }

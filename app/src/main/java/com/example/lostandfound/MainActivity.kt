@@ -10,8 +10,11 @@ import androidx.compose.ui.Modifier
 import com.example.lostandfound.screens.FoundThread
 import com.example.lostandfound.screens.ShowMap
 import com.example.lostandfound.ui.theme.LostAndFoundTheme
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 
 class MainActivity : ComponentActivity() {
+    private val db = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,9 +25,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-//                    LAFApp(modifier = Modifier, applicationContext)
+                    LAFApp(modifier = Modifier, applicationContext,db)
 //                    FoundThread()
-                    ShowMap()
+//                    ShowMap()
                 }
             }
         }
