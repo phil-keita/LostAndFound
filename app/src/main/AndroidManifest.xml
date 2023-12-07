@@ -10,10 +10,6 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
-    <meta-data
-
-        android:name="com.google.android.geo.API_KEY"
-        android:value="AIzaSyCzHxbGyr_m0yUZFI-MEuwqzDIiAOXYDrE" />
 
     <application
         android:allowBackup="true"
@@ -36,6 +32,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCzHxbGyr_m0yUZFI-MEuwqzDIiAOXYDrE" />
     </application>
 
 </manifest>

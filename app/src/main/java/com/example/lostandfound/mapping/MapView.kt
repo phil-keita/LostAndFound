@@ -1,12 +1,13 @@
-package com.example.lostandfound.screens
+package com.example.lostandfound.mapping
 
-import android.content.Context
-import android.graphics.Bitmap
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.core.content.ContextCompat
-import com.google.android.gms.maps.model.BitmapDescriptor
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -18,18 +19,29 @@ import com.google.maps.android.compose.rememberMarkerState
 @Composable
 fun ShowMap(modifier: Modifier = Modifier) {
 
+    val VM: LocationViewModel = viewModel(factory = LocationViewModelFactory(context = LocalContext.current))
+    var locations = VM.getLocationData().observeAsState()
+
+    val lat = locations.value?.latitude?.toDoubleOrNull()
+    val lgt = locations.value?.longitude?.toDoubleOrNull()
+
     // Location to show
-    val gcc = LatLng(41.1552, -80.079247)
+    val userLoc = LatLng(41.155298, -80.079247)
+    if(lat !=null && lgt != null ){
+        val userLoc = LatLng(lat, lgt)
+    }
     val cameraPosition = rememberCameraPositionState(){
-        position = CameraPosition.fromLatLngZoom(gcc, 20f)
+        position = CameraPosition.fromLatLngZoom(userLoc, 15f)
     }
 
     GoogleMap(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .height(300.dp),
         cameraPositionState = cameraPosition
     ){
         Marker(
-            state = rememberMarkerState(position = gcc),
+            state = rememberMarkerState(position = userLoc),
             draggable = true,
             title = "Grove City College",
             snippet = "Marker in GCC",
