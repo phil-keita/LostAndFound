@@ -3,10 +3,12 @@ package com.example.lostandfound
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Context
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -44,6 +46,8 @@ import com.example.lostandfound.screens.LostThread
 import com.example.lostandfound.screens.FoundThread
 import com.example.lostandfound.screens.ProfileScreen
 import com.example.lostandfound.screens.SignInScreen
+import com.example.lostandfound.screens.foundPostCreationForm
+import com.example.lostandfound.screens.lostPostCreationForm
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
@@ -52,13 +56,16 @@ import kotlinx.coroutines.launch
 sealed class NavScreens(val route: String) {
     object Login : NavScreens(route = "Login")
     object SignUp : NavScreens(route = "SignUp")
-    object Find : NavScreens(route = "Find")
+    object Lost : NavScreens(route = "Lost")
     object Found : NavScreens(route = "Found")
     object Chat : NavScreens(route = "Chat")
     object Profile : NavScreens(route = "Profile")
+    object FoundPostCreation: NavScreens(route = "FoundPostCreation")
+    object LostPostCreation: NavScreens(route = "LostPostCreation")
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,7 +80,7 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context, db : FirebaseFirest
     val VM = viewModel<LafViewModel>()
     val vmState by VM.state.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val items = listOf(NavScreens.Find, NavScreens.Found, NavScreens.Chat, NavScreens.Profile)
+    val items = listOf(NavScreens.Lost, NavScreens.Found, NavScreens.Chat, NavScreens.Profile)
     var state by remember { mutableIntStateOf(3) }
     var userSignedIn by remember {
         mutableStateOf(false)
@@ -99,7 +106,7 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context, db : FirebaseFirest
                                     },
                                     icon = {
                                         when(screen.route){
-                                            NavScreens.Find.route -> Icon(Icons.Filled.Search, contentDescription = null)
+                                            NavScreens.Lost.route -> Icon(Icons.Filled.Search, contentDescription = null)
                                             NavScreens.Found.route -> Icon(Icons.Filled.LocationOn, contentDescription = null)
                                             NavScreens.Chat.route -> Icon(Icons.Filled.Email, contentDescription = null)
                                             NavScreens.Profile.route -> Icon(Icons.Filled.Person, contentDescription = null)
@@ -161,8 +168,18 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context, db : FirebaseFirest
                     }
                 )
             }
-            composable(NavScreens.Find.route) { LostThread()  }
-            composable(NavScreens.Found.route) { FoundThread()}
+            composable(NavScreens.Lost.route) { LostThread(
+                {
+                    navController.navigate(NavScreens.LostPostCreation.route)
+                }
+            )  }
+            // This will be yellow but nothing is wrong with it
+            // In other words ... DONT TOUCH IT!! IT WORKS!!
+            composable(NavScreens.Found.route) { FoundThread(
+                {
+                    navController.navigate(NavScreens.FoundPostCreation.route)
+                }
+            )}
             composable(NavScreens.Chat.route) { Chat(userData = googleAuthUiClient.getSignedInUser()) }
             composable(NavScreens.Profile.route) {
                 ProfileScreen(
@@ -182,6 +199,19 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context, db : FirebaseFirest
                 )
 //                state = 3
             }
+            // This will be yellow but nothing is wrong with it
+            // In other words ... DONT TOUCH IT!! IT WORKS!!
+            composable(NavScreens.FoundPostCreation.route){
+                foundPostCreationForm(VM, {
+                    navController.navigate(NavScreens.Found.route)
+                })
+            }
+            composable(NavScreens.LostPostCreation.route){
+                lostPostCreationForm(VM, {
+                    navController.navigate(NavScreens.Lost.route)
+                })
+            }
+
         }
     }
 }

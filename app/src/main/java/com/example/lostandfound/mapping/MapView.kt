@@ -17,7 +17,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
 @Composable
-fun ShowMap(modifier: Modifier = Modifier) {
+fun ShowMap(modifier: Modifier = Modifier): LatLng{
 
     val VM: LocationViewModel = viewModel(factory = LocationViewModelFactory(context = LocalContext.current))
     var locations = VM.getLocationData().observeAsState()
@@ -48,6 +48,8 @@ fun ShowMap(modifier: Modifier = Modifier) {
 //            icon = bitmapDescriptorFromVector(LocalContext.current, R.drawable.babybowser, 100, 100)
         )
     }
+
+    return userLoc
 
 }
 
