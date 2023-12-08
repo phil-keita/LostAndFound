@@ -81,7 +81,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:1.4.0")
     //firebase
     implementation("com.google.firebase:firebase-firestore:24.9.1")
-    implementation("com.firebaseui:firebase-ui-database:4.3.2")
+//    implementation("com.firebaseui:firebase-ui-database:8.0.2")
 
     //Google Maps
     implementation("com.google.maps.android:maps-compose:2.7.2")

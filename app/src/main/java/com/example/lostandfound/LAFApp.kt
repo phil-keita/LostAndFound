@@ -69,7 +69,7 @@ sealed class NavScreens(val route: String) {
 @Composable
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
-fun LAFApp(modifier: Modifier = Modifier, context : Context, db : FirebaseFirestore) {
+fun LAFApp(modifier: Modifier = Modifier, context : Context , db : FirebaseFirestore) {
     val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
             context = context,
@@ -168,19 +168,17 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context, db : FirebaseFirest
                     }
                 )
             }
-            composable(NavScreens.Lost.route) { LostThread(
-                {
-                    navController.navigate(NavScreens.LostPostCreation.route)
-                }
-            )  }
+            composable(NavScreens.Lost.route) { LostThread {
+                navController.navigate(NavScreens.LostPostCreation.route)
+            }
+            }
             // This will be yellow but nothing is wrong with it
             // In other words ... DONT TOUCH IT!! IT WORKS!!
-            composable(NavScreens.Found.route) { FoundThread(
-                {
-                    navController.navigate(NavScreens.FoundPostCreation.route)
-                }
-            )}
-            composable(NavScreens.Chat.route) { Chat(userData = googleAuthUiClient.getSignedInUser()) }
+            composable(NavScreens.Found.route) { FoundThread {
+                navController.navigate(NavScreens.FoundPostCreation.route)
+            }
+            }
+            composable(NavScreens.Chat.route) { Chat(VM = VM) }
             composable(NavScreens.Profile.route) {
                 ProfileScreen(
                     userData = googleAuthUiClient.getSignedInUser(),
