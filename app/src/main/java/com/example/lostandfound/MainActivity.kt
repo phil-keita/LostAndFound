@@ -8,7 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.lostandfound.screens.FoundThread
-import com.example.lostandfound.screens.ShowMap
+//import com.example.lostandfound.screens.ShowMap
 import com.example.lostandfound.ui.theme.LostAndFoundTheme
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
