@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.lostandfound.model.LAFMessage
+import com.example.lostandfound.model.LostPost
 import com.example.lostandfound.presentation.sign_in.SignInResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import com.example.lostandfound.presentation.sign_in.SignInState
@@ -17,9 +18,6 @@ import kotlinx.coroutines.flow.update
 import okhttp3.internal.concurrent.formatDuration
 import java.sql.Date
 import java.sql.Time
-import java.sql.Timestamp
-import java.time.Duration
-import java.time.Instant
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -130,4 +128,74 @@ class LafViewModel: ViewModel(){
     }
 
 
+    //Lost Page
+
+    private val _lostpost = MutableLiveData<Map<String, Any>>()
+    val lostpost: LiveData<Map<String, Any>> = _lostpost
+
+    private val _lostposts = MutableLiveData<List<Map<String, Any>>>(emptyList())
+    val lostposts: LiveData<List<Map<String, Any>>> = _lostposts
+
+    init {
+        getLostPosts()
+    }
+
+    //updates the post during input
+    fun updateLostPost(lostpost: Map<String, Any>) {
+        _lostpost.value = lostpost
+    }
+
+    //sends post to firebase
+    fun addLostPost() {
+        val lostpost: Map<String, Any> = _lostpost.value ?: throw IllegalArgumentException("post empty")
+        if (lostpost.isNotEmpty()) {
+            Firebase.firestore.collection(LostPost.LOSTPOSTS).document().set(
+                hashMapOf(
+                    LostPost.LOSTPOST to lostpost,
+                    LostPost.POST_BY to Firebase.auth.currentUser?.uid,
+                    LostPost.SENT_ON to System.currentTimeMillis(),
+                    LostPost.ITEM to lostpost[LostPost.ITEM],
+                    LostPost.DESCRIPTION to lostpost[LostPost.DESCRIPTION],
+                    LostPost.LOCATION to lostpost[LostPost.LOCATION],
+                    LostPost.TIMEFRAME to lostpost[LostPost.TIMEFRAME]
+                )
+            ).addOnSuccessListener {
+                _lostpost.value = emptyMap()
+            }
+        }
+    }
+
+    
+
+
+    //gets the posts from firebase
+    private fun getLostPosts() {
+        Firebase.firestore.collection(LostPost.LOSTPOSTS)
+            .orderBy(LostPost.SENT_ON)
+            .addSnapshotListener { value, e ->
+                if (e != null) {
+                    Log.w(LostPost.TAG, "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                val list = mutableListOf<Map<String, Any>>()
+
+                if (value != null) {
+                    for (doc in value) {
+                        val data = doc.data
+                        data[LostPost.IS_CURRENT_USER] =
+                            Firebase.auth.currentUser?.uid.toString() == data[LostPost.POST_BY].toString()
+
+                        list.add(data)
+                    }
+                }
+
+                updateLostPosts(list)
+            }
+    }
+
+    //Update the list after getting the details from firestore
+    private fun updateLostPosts(list: MutableList<Map<String, Any>>) {
+        _lostposts.value = list.asReversed()
+    }
 }
