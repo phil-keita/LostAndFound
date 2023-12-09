@@ -1,7 +1,7 @@
 package com.example.lostandfound.screens
 
 import android.Manifest
-import android.content.pm.PackageManager
+
 import android.graphics.Bitmap
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -102,13 +102,6 @@ fun lostPostCreationForm(
         .verticalScroll(scrollState),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally){
-        //Title
-//        Text(
-//            text = "What was found?",
-//            fontSize = 30.sp,
-//            fontWeight = FontWeight.Bold
-//            )
-
 
         // Item TextField
         OutlinedTextField(value = item,
@@ -123,33 +116,6 @@ fun lostPostCreationForm(
             leadingIcon = { Icon(painterResource(id = R.drawable.baseline_devices_other_24), contentDescription = null) },
             modifier = Modifier.width(textFieldSize)
         )
-
-        Row{
-            // Location TextField
-            OutlinedTextField(value = location,
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next,
-                    capitalization = KeyboardCapitalization.Sentences),
-                label = { Text(text = "Item") },
-                placeholder = { Text(text = "Flask",color = Color.Gray) },
-                onValueChange = {item = it},
-                leadingIcon = { Icon(painterResource(id = R.drawable.baseline_devices_other_24), contentDescription = null) },
-                modifier = Modifier.width(textFieldSize),
-                enabled = unknown
-            )
-
-            // Show Map Checkbox
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically){
-                Checkbox(checked = unknown, onCheckedChange = {unknown = it})
-                Text("Unknown")
-            }
-        }
-
         // Description TextField
         OutlinedTextField(
             value = description,
@@ -157,11 +123,35 @@ fun lostPostCreationForm(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Done,
                 capitalization = KeyboardCapitalization.Sentences),
-            label = { Text(text = "Additional Information (Optional)") },
+            label = { Text(text = "Item Description") },
             maxLines = 3,
             onValueChange = {description = it},
             modifier = Modifier.width(textFieldSize)
         )
+        // Location TextField
+        OutlinedTextField(value = location,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next,
+                capitalization = KeyboardCapitalization.Sentences),
+            label = { Text(text = "Item") },
+            placeholder = { Text(text = "Flask",color = Color.Gray) },
+            onValueChange = {item = it},
+            leadingIcon = { Icon(painterResource(id = R.drawable.baseline_location_on_24), contentDescription = null) },
+            modifier = Modifier.width(textFieldSize),
+            enabled = !unknown
+        )
+
+        // Location unknown checkbox
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically){
+            Checkbox(checked = unknown, onCheckedChange = {unknown = it})
+            Text("Unknown")
+        }
+
 
         // Sumbit and Cancel buttons
         Row(modifier = Modifier.padding(16.dp),

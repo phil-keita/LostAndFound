@@ -21,6 +21,7 @@ fun ShowMap(modifier: Modifier = Modifier): LatLng{
 
     val VM: LocationViewModel = viewModel(factory = LocationViewModelFactory(context = LocalContext.current))
     var locations = VM.getLocationData().observeAsState()
+//    VM.startLocationUpdates()
 
     val lat = locations.value?.latitude?.toDoubleOrNull()
     val lgt = locations.value?.longitude?.toDoubleOrNull()
@@ -31,7 +32,7 @@ fun ShowMap(modifier: Modifier = Modifier): LatLng{
         val userLoc = LatLng(lat, lgt)
     }
     val cameraPosition = rememberCameraPositionState(){
-        position = CameraPosition.fromLatLngZoom(userLoc, 15f)
+        position = CameraPosition.fromLatLngZoom(userLoc, 30f)
     }
 
     GoogleMap(
@@ -44,7 +45,7 @@ fun ShowMap(modifier: Modifier = Modifier): LatLng{
             draggable = true,
             title = "Grove City College",
             snippet = "Marker in GCC",
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+//            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
 //            icon = bitmapDescriptorFromVector(LocalContext.current, R.drawable.babybowser, 100, 100)
         )
     }
