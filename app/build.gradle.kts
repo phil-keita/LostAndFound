@@ -83,6 +83,11 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore:24.9.1")
 //    implementation("com.firebaseui:firebase-ui-database:8.0.2")
 
+    //scroll
+    implementation ("com.google.accompanist:accompanist-insets:0.23.0")
+
+
+
     //Google Maps
     implementation("com.google.maps.android:maps-compose:2.7.2")
     implementation("com.google.android.gms:play-services-maps:18.1.0")

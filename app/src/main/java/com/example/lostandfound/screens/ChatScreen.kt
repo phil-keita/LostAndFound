@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -60,6 +61,16 @@ import com.example.lostandfound.ui.theme.md_theme_light_primary
 import com.example.lostandfound.ui.theme.md_theme_light_secondary
 import com.example.lostandfound.ui.theme.md_theme_light_secondaryContainer
 import com.example.lostandfound.ui.theme.md_theme_light_tertiary
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
+import androidx.compose.runtime.LaunchedEffect
+import com.example.lostandfound.ui.theme.md_theme_light_onTertiary
+//import androidx.compose.foundation.layout.PaddingValues
+import com.google.accompanist.insets.rememberInsetsPaddingValues
+import com.google.accompanist.insets.ExperimentalAnimatedInsets
+import com.google.accompanist.insets.LocalWindowInsets
+import com.google.accompanist.insets.ProvideWindowInsets
 //for git
 
 //List of implementation
@@ -75,87 +86,111 @@ import com.example.lostandfound.ui.theme.md_theme_light_tertiary
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Chat(VM : LafViewModel) {
-    var textEntered by remember { mutableStateOf("") }
     val message: String by VM.message.observeAsState(initial = "")
     val messages: List<Map<String, Any>> by VM.messages.observeAsState(
         initial = emptyList<Map<String, Any>>().toMutableList()
     )
     Scaffold(
         topBar = {
-                 TopAppBar(title = {
-                     Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                         Text("Lost Locator Chat",
-                             color = md_theme_light_secondary,
-                             fontSize = 40.sp,
-                             fontWeight = FontWeight.Bold,
-                             letterSpacing = 2.sp
-                         )
-                     }
-                 }, colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = md_theme_light_secondaryContainer) )
+            TopAppBar(
+                title = {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Lost Locator Chat",
+                            color = md_theme_light_secondary,
+                            fontSize = 40.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = md_theme_light_secondaryContainer)
+            )
         },
         bottomBar = {
             BottomAppBar(containerColor = md_theme_light_secondaryContainer) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically,
-
                 ) {
-                    OutlinedTextField(value = message,
+                    OutlinedTextField(
+                        value = message,
                         onValueChange = { VM.updateMessage(it) },
                         label = { "" },
-                        modifier = Modifier.padding(start = 15.dp,
-                            bottom = 8.dp),
+                        modifier = Modifier
+                            .padding(start = 15.dp, bottom = 8.dp)
+                            .fillMaxWidth(0.8f), // Fill 80% of the available width
                         shape = RoundedCornerShape(20.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text
-                        )
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        singleLine = false // Allow the text field to expand vertically
                     )
                     Spacer(modifier = Modifier.padding(10.dp))
-                    IconButton(onClick = {
-                        VM.addMessage()
-                    }) {
-                        Icon(Icons.Filled.Send,
+                    IconButton(onClick = { VM.addMessage() }) {
+                        Icon(
+                            Icons.Filled.Send,
                             contentDescription = "send",
                             tint = md_theme_light_secondary,
-                            modifier = Modifier.size(50.dp))
+                            modifier = Modifier.size(50.dp)
+                        )
                     }
                 }
-
-
             }
         }
     ) { innerpadding ->
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Bottom
-        ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(weight = 0.85f, fill = true),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                reverseLayout = true
+        val listState = rememberLazyListState()
+        LaunchedEffect(messages.size) {
+            listState.animateScrollToItem(index = 0)
+        }
+        ProvideWindowInsets {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
             ) {
-                items(messages) { message ->
-                    val isCurrentUser = message[LAFMessage.IS_CURRENT_USER] as Boolean
-                    val messageText = message["message"] as String
-                    Card(
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.background(
-                            if (!isCurrentUser) md_theme_light_primary else md_theme_light_tertiary
-                        )
-                    ) {
-                        Text(text = messageText,
-                            textAlign =
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(weight = 0.85f, fill = true),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = innerpadding.calculateTopPadding() + 8.dp,
+                        bottom = innerpadding.calculateBottomPadding() + 8.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    reverseLayout = true
+                ) {
+                    items(messages) { message ->
+                        val isCurrentUser = message[LAFMessage.IS_CURRENT_USER] as Boolean
+                        val messageText = message["message"] as String
+                        Card(
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .background(
+                                    color = if (isCurrentUser) md_theme_light_onTertiary else md_theme_light_onPrimary,
+                                    shape = RoundedCornerShape(20.dp)
+                                ),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isCurrentUser) md_theme_light_tertiary else md_theme_light_primary,
+                            )
+                        ) {
+                            Text(
+                                text = messageText,
+                                textAlign =
                                 if (isCurrentUser)
                                     TextAlign.End
                                 else
                                     TextAlign.Start,
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            color = if (!isCurrentUser) md_theme_light_primary else md_theme_light_tertiary
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                color = if (!isCurrentUser) md_theme_light_onTertiary else md_theme_light_onPrimary
                             )
+                        }
                     }
                 }
             }
