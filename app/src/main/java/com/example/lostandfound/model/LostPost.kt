@@ -1,9 +1,7 @@
 package com.example.lostandfound.model
 
-//class LostPost(var item: String, var description: String, var location: String, var time: String) {
-//
-//}
-
+//Object for our lost posts, organization for our
+//firestore db
 object LostPost{
     const val TAG = "LAF"
     const val LOSTPOSTS = "lostposts"

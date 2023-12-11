@@ -1,5 +1,6 @@
 package com.example.lostandfound.model
 
+//Object for our messages for our DB
 object LAFMessage{
     const val TAG = "LAF"
     const val MESSAGES = "messages"

@@ -71,17 +71,9 @@ import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.ProvideWindowInsets
-//for git
 
-//List of implementation
-// UI
-//--- bottom bar
-//------text feild
-//------send icon
-//------keyboard
-// Logic
-// create messages and send to db
-//
+
+//Chat Screen
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +82,7 @@ fun Chat(VM : LafViewModel) {
     val messages: List<Map<String, Any>> by VM.messages.observeAsState(
         initial = emptyList<Map<String, Any>>().toMutableList()
     )
-    Scaffold(
+    Scaffold(//Top bar for style and bottom for messaging field
         topBar = {
             TopAppBar(
                 title = {
@@ -100,7 +92,7 @@ fun Chat(VM : LafViewModel) {
                     ) {
                         Text(
                             "Lost Locator Chat",
-                            color = md_theme_light_secondary,
+                            color = md_theme_light_secondary,//custom theme
                             fontSize = 40.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 2.sp
@@ -125,7 +117,8 @@ fun Chat(VM : LafViewModel) {
                             .fillMaxWidth(0.8f), // Fill 80% of the available width
                         shape = RoundedCornerShape(20.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                        singleLine = false // Allow the text field to expand vertically
+                        singleLine = false // Allow the text field to expand vertically but not-
+                        //-horizontally
                     )
                     Spacer(modifier = Modifier.padding(10.dp))
                     IconButton(onClick = { VM.addMessage() }) {

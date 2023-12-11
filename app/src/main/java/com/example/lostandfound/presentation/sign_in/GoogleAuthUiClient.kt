@@ -14,10 +14,16 @@ import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.CancellationException
 
+/**
+ * Handles one tap sign on with google accounts that have been used on the device
+ * User data (username and uid[which is the same for our firestore database and authentication]),
+ * is sent up to our firestore database
+ */
 class GoogleAuthUiClient(
     private val context: Context,
     private val oneTapClient: SignInClient
 ){
+    //private auth
     private val auth = Firebase.auth
 
     suspend fun  signIn(): IntentSender?{
@@ -35,6 +41,7 @@ class GoogleAuthUiClient(
         return result?.pendingIntent?.intentSender
     }
 
+    //Sign in with intent using google credentials
     suspend fun signInWithIntent(intent: Intent):SignInResult{
         val credential = oneTapClient.getSignInCredentialFromIntent(intent)
         val googleIdToken = credential.googleIdToken
@@ -56,7 +63,7 @@ class GoogleAuthUiClient(
                 },
                 errorMessage = null
             )
-        } catch (e: Exception){
+        } catch (e: Exception){ //error catching
             e.printStackTrace()
             if (e is CancellationException) {
                 throw e
@@ -100,6 +107,8 @@ class GoogleAuthUiClient(
             .build()
     }
 
+    //user data update/add is done here instead of view model
+    //better scope
     suspend fun updateUserData() {
         val user = getSignedInUser()
         if (user != null) {

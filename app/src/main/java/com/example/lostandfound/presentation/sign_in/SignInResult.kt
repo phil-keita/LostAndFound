@@ -11,6 +11,10 @@ data class UserData(
     val profilePicture: String?
 )
 
+//Object for our firestore db, dealing with user data.
+//If we used user we could capture the UserData data class
+//however there is no need to since we chose not to store the
+//user's profile picture
 object DataToDB{
     const val USERS = "users"
     const val USER = "user"
