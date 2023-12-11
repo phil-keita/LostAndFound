@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -227,8 +226,14 @@ fun foundPostCreationForm(
             Checkbox(checked = showMap, onCheckedChange = {
                 showMap = it
             })
-            Text("Pin location on Map")
+            Text("Pin location on Map (Click on location)")
         }
+
+        // Camera position
+        var cameraPosition = CameraPositionState(
+            position = CameraPosition.fromLatLngZoom(locationCoordinates, 17f)
+        )
+        var markerState = MarkerState(position = locationCoordinates)
 
         // Map
         if(showMap){
@@ -244,20 +249,26 @@ fun foundPostCreationForm(
                 )
             }
             // Camera position
-            var cameraPosition = CameraPositionState(
+            cameraPosition = CameraPositionState(
                 position = CameraPosition.fromLatLngZoom(locationCoordinates, 17f)
             )
+            markerState = MarkerState(position = locationCoordinates)
             GoogleMap(
                 modifier = Modifier
                     .height(300.dp),
-                cameraPositionState = cameraPosition
+                cameraPositionState = cameraPosition,
+                onMapClick = {coordinates ->
+                    cameraPosition.position = CameraPosition.fromLatLngZoom(coordinates, 17f)
+                    markerState.position = coordinates
+                }
             ){
                 Marker(
-                    state = MarkerState(position = locationCoordinates),
+                    state = markerState,
                     draggable = true,
                     title = "Your Location",
                     snippet = "Marker in GCC",
                 )
+
             }
         }
 
@@ -298,7 +309,7 @@ fun foundPostCreationForm(
             Button(onClick = {VM.createFoundPost(
                 item = item,
                 locationName = if (isOther) otherLocation else location,
-                location = locationCoordinates,
+                location = markerState.position,
                 additionalInfo = additionalInfo,
                 imgBitmap = imgBitmap?.asImageBitmap() ?: null
             )
