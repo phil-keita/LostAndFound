@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lostandfound.R
 import com.example.lostandfound.data.DummyPosts
-import com.example.lostandfound.mapping.ShowMap
 import com.example.lostandfound.model.FoundPost
 
 @Composable

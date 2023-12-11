@@ -84,12 +84,6 @@ fun foundPostCreationForm(
     var locationCoordinates by remember {
         mutableStateOf<LatLng>(LatLng(41.155298,-80.079247))
     }
-//    var latitude by remember {
-//        mutableStateOf(41.155298)
-//    }
-//    var longitude by remember {
-//        mutableStateOf(-80.079247)
-//    }
     var isOther by remember{
         mutableStateOf(false)
     }
@@ -218,6 +212,7 @@ fun foundPostCreationForm(
                 Divider()
             }
         }
+
         // Show Map Checkbox
         Row(
             modifier = Modifier
@@ -233,6 +228,7 @@ fun foundPostCreationForm(
         var cameraPosition = CameraPositionState(
             position = CameraPosition.fromLatLngZoom(locationCoordinates, 17f)
         )
+        // Marker state (keeps track of where marker is)
         var markerState = MarkerState(position = locationCoordinates)
 
         // Map
@@ -248,11 +244,14 @@ fun foundPostCreationForm(
                     Manifest.permission.ACCESS_FINE_LOCATION
                 )
             }
-            // Camera position
+
+            // Updating values for map
             cameraPosition = CameraPositionState(
                 position = CameraPosition.fromLatLngZoom(locationCoordinates, 17f)
             )
             markerState = MarkerState(position = locationCoordinates)
+
+            // The actual map
             GoogleMap(
                 modifier = Modifier
                     .height(300.dp),
@@ -265,8 +264,8 @@ fun foundPostCreationForm(
                 Marker(
                     state = markerState,
                     draggable = true,
-                    title = "Your Location",
-                    snippet = "Marker in GCC",
+                    title = "Found here",
+                    snippet = "The item was found here",
                 )
 
             }
@@ -367,11 +366,6 @@ fun cameraButton(){
                     modifier = Modifier.size(300.dp, 250.dp),
                     contentScale = ContentScale.Crop)
             }
-//            bitmap?.let{
-//                Image(bitmap = it.asImageBitmap(),
-//                    contentDescription = null,
-//                    contentScale = ContentScale.Crop)
-//            }
 
         }
         val context = LocalContext.current
