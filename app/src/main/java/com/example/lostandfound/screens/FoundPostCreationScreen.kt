@@ -1,9 +1,11 @@
 package com.example.lostandfound.screens
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -41,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -51,13 +53,17 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.lostandfound.LafViewModel
 import com.example.lostandfound.R
-import com.example.lostandfound.mapping.ShowMap
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import java.sql.Timestamp
-import java.time.Instant
+import com.google.maps.android.compose.CameraPositionState
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,8 +83,14 @@ fun foundPostCreationForm(
         mutableStateOf("")
     }
     var locationCoordinates by remember {
-        mutableStateOf<LatLng?>(null)
+        mutableStateOf<LatLng>(LatLng(41.155298,-80.079247))
     }
+//    var latitude by remember {
+//        mutableStateOf(41.155298)
+//    }
+//    var longitude by remember {
+//        mutableStateOf(-80.079247)
+//    }
     var isOther by remember{
         mutableStateOf(false)
     }
@@ -96,11 +108,25 @@ fun foundPostCreationForm(
     }
 
     // UI constants
+    val context = LocalContext.current
     val scrollState = rememberScrollState()
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
     val textFieldSize = (0.75*screenWidth).dp
+
+    // Launch Permission  request for Map View
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(), onResult = { isGranted ->
+            if(isGranted){
+                // Permission is granted, then update Location
+                getCurrentLocation(context){lat, lgt ->
+                    locationCoordinates = LatLng(lat,lgt)
+                }
+            }
+
+        }
+    )
 
     // Form
     Column(modifier = Modifier
@@ -109,12 +135,6 @@ fun foundPostCreationForm(
         .verticalScroll(scrollState),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally){
-        //Title
-//        Text(
-//            text = "What was found?",
-//            fontSize = 30.sp,
-//            fontWeight = FontWeight.Bold
-//            )
 
         // Image Upload
         cameraButton()
@@ -204,13 +224,43 @@ fun foundPostCreationForm(
             modifier = Modifier
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically){
-            Checkbox(checked = showMap, onCheckedChange = {showMap = it})
+            Checkbox(checked = showMap, onCheckedChange = {
+                showMap = it
+            })
             Text("Pin location on Map")
         }
+
         // Map
         if(showMap){
-            locationCoordinates = ShowMap()
+            if(hasLocationPermission(context)){
+                // Permission already granted, update the location
+                getCurrentLocation(context) { lat, lgt ->
+                    locationCoordinates = LatLng(lat,lgt)
+                }
+            }else{
+                // Request location permission
+                requestPermissionLauncher.launch(
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                )
+            }
+            // Camera position
+            var cameraPosition = CameraPositionState(
+                position = CameraPosition.fromLatLngZoom(locationCoordinates, 17f)
+            )
+            GoogleMap(
+                modifier = Modifier
+                    .height(300.dp),
+                cameraPositionState = cameraPosition
+            ){
+                Marker(
+                    state = MarkerState(position = locationCoordinates),
+                    draggable = true,
+                    title = "Your Location",
+                    snippet = "Marker in GCC",
+                )
+            }
         }
+
         // Other location TextField
         OutlinedTextField(value = otherLocation,
             singleLine = true,
@@ -248,7 +298,7 @@ fun foundPostCreationForm(
             Button(onClick = {VM.createFoundPost(
                 item = item,
                 locationName = if (isOther) otherLocation else location,
-                location = locationCoordinates ?: null,
+                location = locationCoordinates,
                 additionalInfo = additionalInfo,
                 imgBitmap = imgBitmap?.asImageBitmap() ?: null
             )
@@ -332,4 +382,40 @@ fun cameraButton(){
                 contentDescription = null)
         }
     }
+}
+private fun getCurrentLocation(context: Context, callback: (Double, Double)->Unit){
+    // TODO:
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
+    if (ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+    ) {
+        // TODO: Consider calling
+        //    ActivityCompat#requestPermissions
+        // here to request the missing permissions, and then overriding
+        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+        //                                          int[] grantResults)
+        // to handle the case where the user grants the permission. See the documentation
+        // for ActivityCompat#requestPermissions for more details.
+        return
+    }
+    fusedLocationClient.lastLocation.addOnSuccessListener{ location ->
+        if(location!=null){
+            callback(location.latitude, location.longitude)
+        }
+    }.addOnFailureListener{exception ->
+        exception.printStackTrace()
+    }
+}
+
+private fun hasLocationPermission(context: Context): Boolean {
+    return ContextCompat.checkSelfPermission(
+        context,
+        android.Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
 }

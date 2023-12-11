@@ -8,12 +8,17 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.lostandfound.screens.FoundThread
-//import com.example.lostandfound.screens.ShowMap
 import com.example.lostandfound.ui.theme.LostAndFoundTheme
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 
 class MainActivity : ComponentActivity() {
     private val db = Firebase.firestore
@@ -29,12 +34,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LAFApp(modifier = Modifier, applicationContext,db)
-//                    FoundThread()
-//                    ShowMap()
+                     LAFApp(modifier = Modifier, applicationContext,db)
                 }
             }
         }
     }
 }
-
