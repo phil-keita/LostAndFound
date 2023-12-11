@@ -17,8 +17,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,8 +37,9 @@ import com.example.lostandfound.LafViewModel
 import com.example.lostandfound.R
 import com.example.lostandfound.data.DummyPosts
 import com.example.lostandfound.model.LostPost
-
-
+import com.google.common.primitives.UnsignedBytes.toInt
+import com.google.common.primitives.UnsignedInts.toLong
+import kotlinx.coroutines.delay
 
 
 @Composable
@@ -46,7 +52,7 @@ fun LostThread(VM : LafViewModel, navToCreate: () -> Unit){
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally){
             items(lostposts){ post ->
-                showLostPost(post = post)
+                showLostPost(VM,post)
             }
         }
         Button(
@@ -66,7 +72,8 @@ fun LostThread(VM : LafViewModel, navToCreate: () -> Unit){
 }
 
 @Composable
-fun showLostPost(post: Map<String, Any>){
+fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
+    var username by remember { mutableStateOf<String?>(null) }
     Card(
         modifier = Modifier.padding(20.dp)
     ){
@@ -76,10 +83,31 @@ fun showLostPost(post: Map<String, Any>){
                 .padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically){
-                Text(text = post[LostPost.SENT_ON].toString(),
+                val currentTimeMillis = remember { mutableStateOf(System.currentTimeMillis()) }
+
+                LaunchedEffect(key1 = currentTimeMillis) {
+                    while (true) {
+                        delay(1000)  // Update every second
+                        currentTimeMillis.value = System.currentTimeMillis()
+                    }
+                }
+
+                val postTimeMillis = post[LostPost.SENT_ON].toString().toLong()
+                val timeDiffHours = (currentTimeMillis.value - postTimeMillis) / (1000 * 60 * 60)
+                val timeDiffDays = timeDiffHours / 24
+                val timeIndicator = when {
+                    timeDiffHours < 1 -> "recent"
+                    timeDiffHours in 1 until 24 -> if (timeDiffHours == 1L) "1 hour ago" else "$timeDiffHours hours ago"
+                    timeDiffDays == 1L -> "1 day ago"
+                    else -> "$timeDiffDays days ago"
+                }
+                LaunchedEffect(key1 = post[LostPost.POST_BY]) {
+                    username = VM.getUsernameByUid(post[LostPost.POST_BY].toString())
+                }
+                Text(text = timeIndicator,
                     color = Color.Gray,
                     fontSize = 15.sp)
-                Text(text = post[LostPost.POST_BY].toString(),
+                Text(text = username ?: "Loading" ,
                     color = Color.Gray)
             }
             Row(modifier = Modifier.padding(8.dp),

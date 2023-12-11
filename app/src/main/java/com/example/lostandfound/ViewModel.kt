@@ -9,9 +9,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.lostandfound.model.LAFMessage
 import com.example.lostandfound.model.LostPost
+import com.example.lostandfound.presentation.sign_in.DataToDB
 import com.example.lostandfound.presentation.sign_in.SignInResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import com.example.lostandfound.presentation.sign_in.SignInState
+import com.example.lostandfound.presentation.sign_in.UserData
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -20,7 +22,10 @@ import java.sql.Date
 import java.sql.Time
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.tasks.await
+import java.util.concurrent.CancellationException
 
 
 //data class UIState(
@@ -37,10 +42,70 @@ class LafViewModel: ViewModel(){
             signInError = result.errorMessage
         )}
     }
-
     fun resetState(){
         _state.update{SignInState()}
     }
+
+    private val _user = MutableLiveData<Map<String, Any>>()
+    val user: LiveData<Map<String, Any>> = _user
+
+    private val _users = MutableLiveData<List<Map<String, Any>>>(emptyList())
+    val users: LiveData<List<Map<String, Any>>> = _users
+
+    init {
+        getUserData()
+    }
+
+    //updates the post during input
+    private fun updateUserData(users: MutableList<Map<String, Any>>) {
+        _users.value = users
+    }
+
+    //Done in a different part of the program
+//    fun addUserData(){
+//        val user: Map<String, Any> = _user.value ?: throw IllegalArgumentException("no user")
+//        Firebase.firestore.collection(DataToDB.USERS).document().set(
+//            hashMapOf(
+//                DataToDB.UID to Firebase.auth.currentUser?.uid,
+//                DataToDB.USERNAME to Firebase.auth.currentUser?.displayName,
+//            )
+//        ).addOnSuccessListener {
+//            _user.value = emptyMap()
+//        }
+//    }
+
+    private fun getUserData() {
+        Firebase.firestore.collection(DataToDB.USERS)
+            .orderBy(DataToDB.UID)
+            .addSnapshotListener { value, e ->
+                if (e != null) {
+                    Log.w(DataToDB.TAG, "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                val list = mutableListOf<Map<String, Any>>()
+
+                if (value != null) {
+                    for (doc in value) {
+                        val data = doc.data
+                        data[DataToDB.IS_CURRENT_USER] =
+                            Firebase.auth.currentUser?.uid.toString() == data[DataToDB.UID].toString()
+
+                        // If the current user's data is found, update _user.value
+                        if (data[DataToDB.IS_CURRENT_USER] == true) {
+                            _user.value = data
+                        }
+
+                        list.add(data)
+                    }
+                }
+
+                updateUserData(list)
+            }
+    }
+
+
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createFoundPost(
@@ -56,15 +121,6 @@ class LafViewModel: ViewModel(){
 
     }
 
-    fun createLostPost(
-        item: String,
-        description: String,
-        location: String?,
-        date: Date?,
-        time: Time?,
-    ){
-
-    }
 
     init {
         getMessages()
@@ -165,7 +221,7 @@ class LafViewModel: ViewModel(){
         }
     }
 
-    
+
 
 
     //gets the posts from firebase
@@ -198,4 +254,24 @@ class LafViewModel: ViewModel(){
     private fun updateLostPosts(list: MutableList<Map<String, Any>>) {
         _lostposts.value = list.asReversed()
     }
+
+    suspend fun getUsernameByUid(uid: String): String? {
+        val db = FirebaseFirestore.getInstance()
+        var username: String? = null
+
+        try {
+            val docSnapshot = db.collection(DataToDB.USERS).document(uid).get().await()
+            if (docSnapshot.exists()) {
+                username = docSnapshot.getString(DataToDB.USERNAME)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            if (e is CancellationException) {
+                throw e
+            }
+        }
+
+        return username
+    }
+
 }

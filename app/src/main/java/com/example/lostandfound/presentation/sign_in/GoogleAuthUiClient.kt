@@ -10,6 +10,7 @@ import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.Firebase
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.CancellationException
 
@@ -18,6 +19,7 @@ class GoogleAuthUiClient(
     private val oneTapClient: SignInClient
 ){
     private val auth = Firebase.auth
+
     suspend fun  signIn(): IntentSender?{
         val result = try{
             oneTapClient.beginSignIn(
@@ -37,6 +39,10 @@ class GoogleAuthUiClient(
         val credential = oneTapClient.getSignInCredentialFromIntent(intent)
         val googleIdToken = credential.googleIdToken
         val googleCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
+        val user = auth.signInWithCredential(googleCredential).await().user
+        if (user != null) {
+            updateUserData()
+        }
         return try {
 
             val user = auth.signInWithCredential(googleCredential).await().user
@@ -92,5 +98,24 @@ class GoogleAuthUiClient(
             )
             .setAutoSelectEnabled(true)
             .build()
+    }
+
+    suspend fun updateUserData() {
+        val user = getSignedInUser()
+        if (user != null) {
+            val userData = hashMapOf(
+                DataToDB.UID to Firebase.auth.currentUser?.uid,
+                DataToDB.USERNAME to Firebase.auth.currentUser?.displayName,
+            )
+
+            try {
+                Firebase.firestore.collection(DataToDB.USERS).document(user.userId).set(userData).await()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                if (e is CancellationException) {
+                    throw e
+                }
+            }
+        }
     }
 }

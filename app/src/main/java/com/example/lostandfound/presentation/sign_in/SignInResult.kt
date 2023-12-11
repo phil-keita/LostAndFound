@@ -10,3 +10,12 @@ data class UserData(
     val username: String?,
     val profilePicture: String?
 )
+
+object DataToDB{
+    const val USERS = "users"
+    const val USER = "user"
+    const val TAG = "LAF"
+    const val UID = "uid"
+    const val USERNAME = "username"
+    const val IS_CURRENT_USER = "is_current_user"
+}
