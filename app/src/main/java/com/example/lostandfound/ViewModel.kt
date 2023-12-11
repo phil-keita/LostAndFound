@@ -7,7 +7,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.lostandfound.model.FoundPost
 import com.example.lostandfound.model.LAFMessage
+import com.example.lostandfound.model.Location
 import com.example.lostandfound.model.LostPost
 import com.example.lostandfound.presentation.sign_in.DataToDB
 import com.example.lostandfound.presentation.sign_in.SignInResult
@@ -23,14 +25,12 @@ import java.sql.Time
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.local.ReferenceSet
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.CancellationException
 
-
-//data class UIState(
-//
-//)
 
 class LafViewModel: ViewModel(){
     private val _state = MutableStateFlow(SignInState())
@@ -91,21 +91,115 @@ class LafViewModel: ViewModel(){
             }
     }
 
+    //Locations handler (Predefined locations saved in firebase that are used in dropdown selections)
+    private val _locations = MutableLiveData<List<Map<String, Any>>>(emptyList())
+    val locations: LiveData<List<Map<String, Any>>> = _locations
+    init{
+        getLocations()
+    }
+    /**
+     * Gets all hard coded locations from firebase
+     * For the dropdown location selection
+     */
+    private fun getLocations() {
+        Firebase.firestore.collection(Location.LOCATIONS)
+            .addSnapshotListener { value, e ->
+                if (e != null) {
+                    Log.w(Location.TAG, "Listen failed.", e)
+                    return@addSnapshotListener
+                }
 
+                val list = mutableListOf<Map<String, Any>>()
 
+                if (value != null) {
+                    for (doc in value) {
+                        val data = doc.data
+                        list.add(data)
+                    }
+                }
+                updateLocations(list)
+            }
+    }
+    /**
+     * Updates the list of predefined locations
+     */
+    private fun updateLocations(list: MutableList<Map<String, Any>>) {
+        _locations.value = list.asReversed()
+    }
 
+    // Found Page Handlers
+
+    // Found Post
+    private val _foundpost = MutableLiveData<Map<String, Any>>()
+    val foundpost: LiveData<Map<String, Any>> = _foundpost
+    // Found Posts
+    private val _foundposts = MutableLiveData<List<Map<String, Any>>>(emptyList())
+    val foundposts: LiveData<List<Map<String, Any>>> = _foundposts
+
+    init {
+        getFoundPosts()
+    }
+
+    /**
+     * Updates the post during input
+     */
+    fun updateFoundPost(foundpost: Map<String, Any>) {
+        _foundpost.value = foundpost
+    }
+
+    /**
+     * Handles creation of a new found post.
+     * Send information of  new post to firebase
+     */
     @RequiresApi(Build.VERSION_CODES.O)
     fun createFoundPost(
-        item: String,
-        locationName: String,
-        location: LatLng?,
-        additionalInfo: String,
-        imgBitmap: ImageBitmap?
     ){
-        val timeAgo: String = formatDuration(System.currentTimeMillis())
-        Log.d("Debug","item: ${item} was added $timeAgo ago.")
-        Log.d("Debug","Latitude: ${location?.latitude ?: 0.0}")
+        val foundpost: Map<String, Any> = _foundpost.value ?: throw IllegalArgumentException("post empty")
+        if (foundpost.isNotEmpty()) {
+            Firebase.firestore.collection(FoundPost.FOUNDPOSTS).document().set(
+                hashMapOf(
+                    FoundPost.ITEM to foundpost[FoundPost.ITEM],
+                    FoundPost.POST_BY to Firebase.auth.currentUser?.uid,
+                    FoundPost.SENT_ON to System.currentTimeMillis(),
+                    FoundPost.ADDITIONAL_INFO to foundpost[FoundPost.ADDITIONAL_INFO],
+                    FoundPost.LOCATION to foundpost[FoundPost.LOCATION],
+                    FoundPost.LOCATION_NAME to foundpost[FoundPost.LOCATION_NAME]
+                )
+            ).addOnSuccessListener {
+                _foundpost.value = emptyMap()
+            }
+        }
+    }
 
+    //gets the posts from firebase
+    private fun getFoundPosts() {
+        Firebase.firestore.collection(FoundPost.FOUNDPOSTS)
+            .orderBy(FoundPost.SENT_ON)
+            .addSnapshotListener { value, e ->
+                if (e != null) {
+                    Log.w(FoundPost.TAG, "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                val list = mutableListOf<Map<String, Any>>()
+
+                if (value != null) {
+                    for (doc in value) {
+                        val data = doc.data
+                        data[FoundPost.IS_CURRENT_USER] =
+                            Firebase.auth.currentUser?.uid.toString() == data[FoundPost.POST_BY].toString()
+
+                        list.add(data)
+                    }
+                }
+
+                updateFoundPosts(list)
+            }
+    }
+
+    //Update the list after getting the details from firestore
+    private fun updateFoundPosts(list: MutableList<Map<String, Any>>) {
+        _foundposts.value = list.asReversed()
     }
 
 

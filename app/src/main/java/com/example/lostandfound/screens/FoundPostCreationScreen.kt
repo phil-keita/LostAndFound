@@ -37,6 +37,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,14 +56,19 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.lostandfound.LafViewModel
+import com.example.lostandfound.NavScreens
 import com.example.lostandfound.R
+import com.example.lostandfound.model.FoundPost
+import com.example.lostandfound.model.LostPost
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.GeoPoint
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
+import com.example.lostandfound.model.Location
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,6 +76,9 @@ import com.google.maps.android.compose.MarkerState
 fun foundPostCreationForm(
     VM: LafViewModel,
     cancelCreation: () -> Unit) {
+
+    //List of all predefined locations
+    val locations: List<Map<String, Any>> by VM.locations.observeAsState(initial = emptyList())
 
     // Form values
     var item by remember {
@@ -82,6 +91,9 @@ fun foundPostCreationForm(
         mutableStateOf("")
     }
     var locationCoordinates by remember {
+        mutableStateOf<LatLng>(LatLng(41.155298,-80.079247))
+    }
+    var predefinedCoordinates by remember {
         mutableStateOf<LatLng>(LatLng(41.155298,-80.079247))
     }
     var isOther by remember{
@@ -167,41 +179,18 @@ fun foundPostCreationForm(
             ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(
-                    text = { Text("HBL") },
-                    onClick ={
-                        location = "HBL"
-                        expanded = false
-                    })
-                Divider()
-                DropdownMenuItem(
-                    text = { Text("SHAL") },
-                    onClick ={
-                        location = "SHAL"
-                        expanded = false
-                    })
-                Divider()
-                DropdownMenuItem(
-                    text = { Text("STEM") },
-                    onClick ={
-                        location = "STEM"
-                        expanded = false
-                    })
-                Divider()
-                DropdownMenuItem(
-                    text = { Text("PLC") },
-                    onClick ={
-                        location = "PLC"
-                        expanded = false
-                    })
-                Divider()
-                DropdownMenuItem(
-                    text = { Text("PEW") },
-                    onClick ={
-                        location = "PEW"
-                        expanded = false
-                    })
-                Divider()
+                for (loc in locations) {
+                    DropdownMenuItem(
+                        text = { Text("${loc[Location.LOCATION_NAME]}") },
+                        onClick ={
+                            location = loc[Location.LOCATION_NAME] as String
+                            var coor = loc[Location.LOCATION] as GeoPoint
+                            predefinedCoordinates = LatLng(coor.latitude, coor.longitude)
+                            isOther = false
+                            expanded = false
+                        })
+                    Divider()
+                }
                 DropdownMenuItem(
                     text = { Text("Other") },
                     onClick ={
@@ -209,7 +198,6 @@ fun foundPostCreationForm(
                         expanded = false
                         isOther = true
                     })
-                Divider()
             }
         }
 
@@ -232,7 +220,7 @@ fun foundPostCreationForm(
         var markerState = MarkerState(position = locationCoordinates)
 
         // Map
-        if(showMap){
+        if(showMap && isOther){
             if(hasLocationPermission(context)){
                 // Permission already granted, update the location
                 getCurrentLocation(context) { lat, lgt ->
@@ -250,6 +238,32 @@ fun foundPostCreationForm(
                 position = CameraPosition.fromLatLngZoom(locationCoordinates, 17f)
             )
             markerState = MarkerState(position = locationCoordinates)
+
+            // The actual map
+            GoogleMap(
+                modifier = Modifier
+                    .height(300.dp),
+                cameraPositionState = cameraPosition,
+                onMapClick = {coordinates ->
+                    cameraPosition.position = CameraPosition.fromLatLngZoom(coordinates, 17f)
+                    markerState.position = coordinates
+                }
+            ){
+                Marker(
+                    state = markerState,
+                    draggable = true,
+                    title = "Found here",
+                    snippet = "The item was found here",
+                )
+
+            }
+        }
+        else if(showMap){
+            // Updating values for map
+            cameraPosition = CameraPositionState(
+                position = CameraPosition.fromLatLngZoom(predefinedCoordinates, 17f)
+            )
+            markerState = MarkerState(position = predefinedCoordinates)
 
             // The actual map
             GoogleMap(
@@ -305,14 +319,22 @@ fun foundPostCreationForm(
             ){
                 Text("Cancel")
             }
-            Button(onClick = {VM.createFoundPost(
-                item = item,
-                locationName = if (isOther) otherLocation else location,
-                location = markerState.position,
-                additionalInfo = additionalInfo,
-                imgBitmap = imgBitmap?.asImageBitmap() ?: null
-            )
-                             cancelCreation()},
+            Button(onClick = {
+                if (item.isNotEmpty() && additionalInfo.isNotEmpty() && location.isNotEmpty()) {
+                    VM.updateFoundPost(
+                        hashMapOf(
+                            FoundPost.ITEM to item,
+                            FoundPost.ADDITIONAL_INFO to additionalInfo,
+                            FoundPost.LOCATION to GeoPoint(markerState.position.latitude, markerState.position.longitude),
+                            FoundPost.LOCATION_NAME to if (isOther) otherLocation else location
+                        )
+                    )
+                    VM.createFoundPost()
+                    cancelCreation()
+                } else {
+                    // Show an error message or a dialog here
+                }
+            },
                 modifier = Modifier.padding(16.dp)){
                 Text("Post")
             }
