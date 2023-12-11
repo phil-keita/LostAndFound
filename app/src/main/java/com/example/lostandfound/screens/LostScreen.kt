@@ -77,7 +77,7 @@ fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
     Card(
         modifier = Modifier.padding(20.dp)
     ){
-        Column(){
+        Column {
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
@@ -92,6 +92,7 @@ fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
                     }
                 }
 
+                //pull time of post and reflect and format
                 val postTimeMillis = post[LostPost.SENT_ON].toString().toLong()
                 val timeDiffHours = (currentTimeMillis.value - postTimeMillis) / (1000 * 60 * 60)
                 val timeDiffDays = timeDiffHours / 24
@@ -101,9 +102,12 @@ fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
                     timeDiffDays == 1L -> "1 day ago"
                     else -> "$timeDiffDays days ago"
                 }
+
+                //get username of the poster
                 LaunchedEffect(key1 = post[LostPost.POST_BY]) {
                     username = VM.getUsernameByUid(post[LostPost.POST_BY].toString())
                 }
+
                 Text(text = timeIndicator,
                     color = Color.Gray,
                     fontSize = 15.sp)
@@ -122,14 +126,16 @@ fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
                 Text(text= post[LostPost.DESCRIPTION].toString())
             }
             Row(modifier = Modifier.padding(8.dp)){
-                Column(){
+                Column {
                     Text("Location: ${post[LostPost.LOCATION]}",
                         fontSize = 15.sp)
                     Text("Time frame: ${post[LostPost.TIMEFRAME]}",
                         fontSize = 15.sp)
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                Button(onClick = {}){
+                Button(onClick = {
+
+                }){
                     Text("Found it!")
                 }
             }

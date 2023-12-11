@@ -87,7 +87,7 @@ fun FoundPostDetails(post: FoundPost){
             }
             },
         text = {
-            Column(){
+            Column {
                 Row(modifier = Modifier.padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ){
@@ -133,7 +133,7 @@ fun showFoundPost(post: FoundPost){
     Card(
         modifier = Modifier.padding(20.dp)
     ){
-        Column(){
+        Column {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

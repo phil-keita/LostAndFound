@@ -61,19 +61,6 @@ class LafViewModel: ViewModel(){
         _users.value = users
     }
 
-    //Done in a different part of the program
-//    fun addUserData(){
-//        val user: Map<String, Any> = _user.value ?: throw IllegalArgumentException("no user")
-//        Firebase.firestore.collection(DataToDB.USERS).document().set(
-//            hashMapOf(
-//                DataToDB.UID to Firebase.auth.currentUser?.uid,
-//                DataToDB.USERNAME to Firebase.auth.currentUser?.displayName,
-//            )
-//        ).addOnSuccessListener {
-//            _user.value = emptyMap()
-//        }
-//    }
-
     private fun getUserData() {
         Firebase.firestore.collection(DataToDB.USERS)
             .orderBy(DataToDB.UID)

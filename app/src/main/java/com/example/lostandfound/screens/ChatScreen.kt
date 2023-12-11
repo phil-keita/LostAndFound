@@ -82,6 +82,8 @@ fun Chat(VM : LafViewModel) {
     val messages: List<Map<String, Any>> by VM.messages.observeAsState(
         initial = emptyList<Map<String, Any>>().toMutableList()
     )
+
+
     Scaffold(//Top bar for style and bottom for messaging field
         topBar = {
             TopAppBar(

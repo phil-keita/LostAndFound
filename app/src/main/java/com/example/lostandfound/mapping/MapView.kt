@@ -62,7 +62,7 @@ fun ShowMap(modifier: Modifier = Modifier, coordinates:LatLng = LatLng(41.155298
 //    val location = LatLng(userLoc.latitude,userLoc.longitude)
 
     // Show map with user location
-    val cameraPosition = rememberCameraPositionState(){
+    val cameraPosition = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(coordinates, 17f)
     }
 

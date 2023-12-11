@@ -3,9 +3,7 @@ package com.example.lostandfound.data
 import com.example.lostandfound.model.LostPost
 import com.example.lostandfound.model.FoundPost
 
-class DummyPosts (
-
-){
+class DummyPosts {
 //    fun getDummyLostPosts(): List<LostPost>{
 //        return listOf<LostPost>(
 //            LostPost("Earbuds", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", "SAC", "10:00AM-12:00PM"),

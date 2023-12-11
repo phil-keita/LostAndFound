@@ -416,6 +416,6 @@ private fun getCurrentLocation(context: Context, callback: (Double, Double)->Uni
 private fun hasLocationPermission(context: Context): Boolean {
     return ContextCompat.checkSelfPermission(
         context,
-        android.Manifest.permission.ACCESS_FINE_LOCATION
+        Manifest.permission.ACCESS_FINE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
 }
