@@ -168,7 +168,7 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context , db : FirebaseFires
                     }
                 )
             }
-            composable(NavScreens.Lost.route) { LostThread {
+            composable(NavScreens.Lost.route) { LostThread(VM) {
                 navController.navigate(NavScreens.LostPostCreation.route)
             }
             }

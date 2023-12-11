@@ -34,7 +34,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.lostandfound.LafViewModel
 import com.example.lostandfound.R
-import java.sql.Date
+import com.example.lostandfound.model.LostPost
 import java.sql.Time
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -54,11 +54,8 @@ fun lostPostCreationForm(
     var location by remember {
         mutableStateOf("")
     }
-    var date by remember {
-        mutableStateOf<Date?>(null)
-    }
-    var time by remember {
-        mutableStateOf<Time?>(null)
+    var timeframe by remember {
+        mutableStateOf("")
     }
     var unknown by remember {
         mutableStateOf(false)
@@ -105,18 +102,32 @@ fun lostPostCreationForm(
             modifier = Modifier.width(textFieldSize)
         )
         // Location TextField
-        OutlinedTextField(value = location,
+        OutlinedTextField(value = if (unknown) "Unknown" else location,
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next,
                 capitalization = KeyboardCapitalization.Sentences),
-            label = { Text(text = "Item") },
+            label = { Text(text = "Location") },
             placeholder = { Text(text = "Flask",color = Color.Gray) },
-            onValueChange = {item = it},
+            onValueChange = {location = it},
             leadingIcon = { Icon(painterResource(id = R.drawable.baseline_location_on_24), contentDescription = null) },
             modifier = Modifier.width(textFieldSize),
             enabled = !unknown
+        )
+
+        // Timeframe TextField
+        OutlinedTextField(value = timeframe,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next,
+                capitalization = KeyboardCapitalization.Sentences),
+            label = { Text(text = "Timeframe") },
+            placeholder = { Text(text = "Enter timeframe",color = Color.Gray) },
+            onValueChange = {timeframe = it},
+            leadingIcon = { Icon(painterResource(id = R.drawable.schedule), contentDescription = null) },
+            modifier = Modifier.width(textFieldSize)
         )
 
         // Location unknown checkbox
@@ -129,7 +140,7 @@ fun lostPostCreationForm(
         }
 
 
-        // Sumbit and Cancel buttons
+        // Submit and Cancel buttons
         Row(modifier = Modifier.padding(16.dp),
             horizontalArrangement = Arrangement.SpaceAround){
             Button(onClick = {cancelCreation()},
@@ -137,18 +148,25 @@ fun lostPostCreationForm(
             ){
                 Text("Cancel")
             }
-            Button(onClick = {VM.createLostPost(
-                item = item,
-                description = description,
-                location = location,
-                date = date,
-                time = time
-            )
-                             cancelCreation()},
+            Button(onClick = {
+                if (item.isNotEmpty() && description.isNotEmpty() && location.isNotEmpty() && timeframe.isNotEmpty()) {
+                    VM.updateLostPost(
+                        hashMapOf(
+                            LostPost.ITEM to item,
+                            LostPost.DESCRIPTION to description,
+                            LostPost.LOCATION to if (unknown) "Unknown" else location,
+                            LostPost.TIMEFRAME to timeframe
+                        )
+                    )
+                    VM.addLostPost()
+                    cancelCreation()
+                } else {
+                    // Show an error message or a dialog here
+                }
+            },
                 modifier = Modifier.padding(16.dp)){
                 Text("Post")
             }
         }
     }
-
 }
