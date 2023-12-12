@@ -140,6 +140,7 @@ class LafViewModel: ViewModel(){
         _locations.value = list.asReversed()
     }
 
+
     // FOUND PAGE HANDLERS
 
     // Found Post
@@ -148,11 +149,9 @@ class LafViewModel: ViewModel(){
     // Found Posts
     private val _foundposts = MutableLiveData<List<Map<String, Any>>>(emptyList())
     val foundposts: LiveData<List<Map<String, Any>>> = _foundposts
-
     init {
         getFoundPosts()
     }
-
     /**
      * Updates the post during input
      */
@@ -182,7 +181,6 @@ class LafViewModel: ViewModel(){
         }
         return imgPath
     }
-
     /**
      * Handles creation of a new found post.
      * Send information of  new post to firebase
@@ -207,7 +205,6 @@ class LafViewModel: ViewModel(){
             }
         }
     }
-
     /**
      * Get all found posts
      */
@@ -232,7 +229,6 @@ class LafViewModel: ViewModel(){
                 updateFoundPosts(list)
             }
     }
-
     /**
      * Update list after pulling from firestore
      */
@@ -240,11 +236,12 @@ class LafViewModel: ViewModel(){
         _foundposts.value = list.asReversed()
     }
 
+
     // MESSAGE HANDLERS
 
     init {
 //        getMessages()
-        getConversations()
+//        getConversations()
     }
 
     private val _message = MutableLiveData("")
@@ -279,29 +276,44 @@ class LafViewModel: ViewModel(){
         var convo: Map<String, Any>? = _conversations.value?.get(convoIndex)
         if (convo != null){
             val docRef: List<DocumentReference> = convo[Conversation.MESSAGES] as List<DocumentReference>
-        }
-        Firebase.firestore.collection(LAFMessage.MESSAGES)
-            .orderBy(LAFMessage.SENT_ON)
-            .addSnapshotListener { value, e ->
-                if (e != null) {
-                    Log.w(LAFMessage.TAG, "Listen failed.", e)
-                    return@addSnapshotListener
-                }
+            val list = emptyList<Map<String, Any>>().toMutableList()
+            for(ref in docRef){
+                ref
+                    .addSnapshotListener{ value, e ->
+                        if (e != null) {
+                            Log.w(LAFMessage.TAG, "Listen failed.", e)
+                            return@addSnapshotListener
+                        }
 
-                val list = emptyList<Map<String, Any>>().toMutableList()
-
-                if (value != null) {
-                    for (doc in value) {
-                        val data = doc.data
-                        data[LAFMessage.IS_CURRENT_USER] =
-                            Firebase.auth.currentUser?.uid.toString() == data[LAFMessage.SENT_BY].toString()
-
-                        list.add(data)
+                        if (value != null){
+                            list.add(value.data!!)
+                        }
                     }
-                }
-
-                updateMessages(list)
             }
+            updateMessages(list)
+        }
+//        Firebase.firestore.collection(LAFMessage.MESSAGES)
+//            .orderBy(LAFMessage.SENT_ON)
+//            .addSnapshotListener { value, e ->
+//                if (e != null) {
+//                    Log.w(LAFMessage.TAG, "Listen failed.", e)
+//                    return@addSnapshotListener
+//                }
+//
+//                val list = emptyList<Map<String, Any>>().toMutableList()
+//
+//                if (value != null) {
+//                    for (doc in value) {
+//                        val data = doc.data
+//                        data[LAFMessage.IS_CURRENT_USER] =
+//                            Firebase.auth.currentUser?.uid.toString() == data[LAFMessage.SENT_BY].toString()
+//
+//                        list.add(data)
+//                    }
+//                }
+//
+//                updateMessages(list)
+//            }
     }
     //Update the list after getting the details from firestore
     private fun updateMessages(list: MutableList<Map<String, Any>>) {
