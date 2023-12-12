@@ -411,7 +411,7 @@ class LafViewModel: ViewModel(){
     val conversations: LiveData<MutableList<Map<String, Any>>> = _conversations
 
     init {
-//        getConversations()
+        getConversations()
     }
 
     /**
@@ -450,9 +450,10 @@ class LafViewModel: ViewModel(){
                     Log.w(FoundPost.TAG, "Listen failed.", e)
                     return@addSnapshotListener
                 }
-                if (value != null) {
+                if (value != null && value.exists()) {
                     var list = mutableListOf<Map<String, Any>>()
-                    var convos: List<DocumentReference> = value.getField(DataToDB.CONVERSATIONS)!!
+                    //var convos: List<DocumentReference> = value.getField(DataToDB.CONVERSATIONS)!!
+                    var convos: List<DocumentReference> = value.getField(DataToDB.CONVERSATIONS) as? List<DocumentReference> ?: listOf()
                     for(convo in convos){
                         convo
                             .addSnapshotListener{ value , e ->

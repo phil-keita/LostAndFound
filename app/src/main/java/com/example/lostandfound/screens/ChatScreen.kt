@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import com.example.lostandfound.LafViewModel
 import com.example.lostandfound.model.LAFMessage
+import com.example.lostandfound.model.Conversation
 import com.example.lostandfound.presentation.sign_in.UserData
 import com.example.lostandfound.ui.theme.md_theme_dark_onTertiaryContainer
 import com.example.lostandfound.ui.theme.md_theme_dark_secondaryContainer
@@ -65,6 +67,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.LaunchedEffect
+
+import com.example.lostandfound.model.LostPost
 import com.example.lostandfound.ui.theme.md_theme_light_onTertiary
 //import androidx.compose.foundation.layout.PaddingValues
 import com.google.accompanist.insets.rememberInsetsPaddingValues
@@ -83,7 +87,6 @@ fun Chat(VM : LafViewModel) {
         initial = emptyList<Map<String, Any>>().toMutableList()
     )
 
-
     Scaffold(//Top bar for style and bottom for messaging field
         topBar = {
             TopAppBar(
@@ -93,7 +96,7 @@ fun Chat(VM : LafViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "Lost Locator Chat",
+                            "/* TODO */",//insert name of user chatting with
                             color = md_theme_light_secondary,//custom theme
                             fontSize = 40.sp,
                             fontWeight = FontWeight.Bold,
@@ -185,6 +188,78 @@ fun Chat(VM : LafViewModel) {
                                     .padding(16.dp),
                                 color = if (!isCurrentUser) md_theme_light_onTertiary else md_theme_light_onPrimary
                             )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+/*
+Top Bar "Conversations"
+Clickable Cards
+    conversations for that user
+    if empty say "Claim or Found"
+ */
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun conversations(VM: LafViewModel){
+    val conversation: Map<String, Any> by VM.conversation.observeAsState(emptyMap())
+    val conversations: List<Map<String, Any>> by VM.messages.observeAsState(
+            initial = emptyList<Map<String, Any>>().toMutableList()
+            )
+
+    Scaffold(//Top bar for style and bottom for messaging field
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Lost Locator Chat",
+                            color = md_theme_light_secondary,//custom theme
+                            fontSize = 40.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = md_theme_light_secondaryContainer)
+            )
+        }) {  innerpadding ->
+        val listState = rememberLazyListState()
+        LaunchedEffect(conversations.size) {
+            listState.animateScrollToItem(index = 0)
+        }
+        ProvideWindowInsets {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(weight = 0.85f, fill = true),
+                    reverseLayout = false
+                ) {
+                    items(conversations) { conversation ->
+                        Card {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            ) {
+                                Text(
+                                    text = conversation[Conversation.USER2].toString()
+                                    )
+                            }
                         }
                     }
                 }

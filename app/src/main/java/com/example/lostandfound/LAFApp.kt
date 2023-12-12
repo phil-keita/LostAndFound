@@ -46,6 +46,7 @@ import com.example.lostandfound.screens.LostThread
 import com.example.lostandfound.screens.FoundThread
 import com.example.lostandfound.screens.ProfileScreen
 import com.example.lostandfound.screens.SignInScreen
+import com.example.lostandfound.screens.conversations
 import com.example.lostandfound.screens.foundPostCreationForm
 import com.example.lostandfound.screens.lostPostCreationForm
 import com.google.android.gms.auth.api.identity.Identity
@@ -178,7 +179,7 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context , db : FirebaseFires
                 navController.navigate(NavScreens.FoundPostCreation.route)
             }
             }
-            composable(NavScreens.Chat.route) { Chat(VM = VM) }
+            composable(NavScreens.Chat.route) { conversations(VM = VM) }
             composable(NavScreens.Profile.route) {
                 ProfileScreen(
                     userData = googleAuthUiClient.getSignedInUser(),
