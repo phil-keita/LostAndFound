@@ -86,7 +86,8 @@ dependencies {
     //scroll
     implementation ("com.google.accompanist:accompanist-insets:0.23.0")
 
-
+    //Image
+    implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
 
     //Google Maps
     implementation("com.google.maps.android:maps-compose:2.7.2")

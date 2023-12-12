@@ -7,6 +7,7 @@ object LAFMessage{
     const val MESSAGE = "message"
     const val SENT_BY = "sent_by"
     const val SENT_ON = "sent_on"
+    const val SENT_TO = "sent_to"
     const val IS_CURRENT_USER = "is_current_user"
 }
 
