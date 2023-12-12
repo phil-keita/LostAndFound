@@ -1,6 +1,9 @@
 package com.example.lostandfound.screens
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,12 +34,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImagePainter.State.Empty.painter
 import com.example.lostandfound.LafViewModel
 import com.example.lostandfound.R
 import com.example.lostandfound.data.DummyPosts
@@ -181,7 +188,27 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
                     .fillMaxWidth()
                     .height(200.dp)){
                 // Item Image
-                Image(painter = painterResource(id = R.drawable.earbuds), contentDescription = null,
+                var painter = painterResource(id = R.drawable.baseline_camera_alt_24)
+//                val img = VM.getImage("images/58441de0-8069-402d-89df-0f81e9ceee4e.jpg")
+//                var uri = img.toURI().hashCode()
+//                painter = painterResource(id = uri)
+
+//                val bitmap = BitmapFactory.decodeFile(img.absolutePath).asImageBitmap()
+//                Image(
+//                    bitmap = bitmap.asImageBitmap(),
+//                    contentDescription = null,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(200.dp),
+//                    contentScale = ContentScale.Crop
+//                )
+//                if(post[FoundPost.IMG_SRC] != null){
+//                    val img = VM.getImage(post[FoundPost.IMG_SRC] as String)
+//                    Log.d("File Download", "File downloaded")
+//                    val painter = painterResource(id = img.toURI().hashCode())
+//                    Log.d("File Download", "Painter created")
+//                }
+                Image(painter = painter, contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp),
@@ -229,7 +256,7 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
             Text(text = "The Earbuds were by the last booth on the right side of the main floor.",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal= 16.dp))
+                    .padding(horizontal = 16.dp))
             // Claim button
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,

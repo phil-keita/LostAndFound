@@ -1,7 +1,11 @@
 package com.example.lostandfound
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.LiveData
@@ -28,7 +32,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.local.ReferenceSet
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.storage
+import io.grpc.Context.Storage
 import kotlinx.coroutines.tasks.await
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.util.UUID
 import java.util.concurrent.CancellationException
 
 
@@ -143,8 +153,32 @@ class LafViewModel: ViewModel(){
     /**
      * Updates the post during input
      */
-    fun updateFoundPost(foundpost: Map<String, Any>) {
+    fun updateFoundPost(foundpost: Map<String, Any>){
         _foundpost.value = foundpost
+    }
+    fun updateFoundPostImage(imgBitmap: Bitmap): String{
+        val storage = Firebase.storage
+        val baos = ByteArrayOutputStream()
+        imgBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val data = baos.toByteArray()
+        // Get a reference to the Firebase Storage root directory
+        val storageRef = storage.reference
+        //Creating unique image name
+        var unique = UUID.randomUUID()
+        // Storage path
+        val imgPath = "images/$unique.jpg"
+        val imageRef = storageRef.child("images/$unique.jpg")
+        // Uploading
+        val uploadTask = imageRef.putBytes(data)
+        //Success or failure
+        uploadTask.addOnSuccessListener {
+            // Handle successful upload
+            Log.d("IMG Upload", "Succeed: ")
+        }.addOnFailureListener {
+            //TODO: Add failure toast
+            Log.d("IMGUpload", "Failed")
+        }
+        return imgPath
     }
 
     /**
@@ -163,7 +197,8 @@ class LafViewModel: ViewModel(){
                     FoundPost.SENT_ON to System.currentTimeMillis(),
                     FoundPost.ADDITIONAL_INFO to foundpost[FoundPost.ADDITIONAL_INFO],
                     FoundPost.LOCATION to foundpost[FoundPost.LOCATION],
-                    FoundPost.LOCATION_NAME to foundpost[FoundPost.LOCATION_NAME]
+                    FoundPost.LOCATION_NAME to foundpost[FoundPost.LOCATION_NAME],
+                    FoundPost.IMG_SRC to foundpost[FoundPost.IMG_SRC]
                 )
             ).addOnSuccessListener {
                 _foundpost.value = emptyMap()
@@ -353,6 +388,23 @@ class LafViewModel: ViewModel(){
         }
 
         return username
+    }
+
+    /**
+     * Returns an image from firebase
+     */
+    fun getImage(ref: String):File{
+        val storage = Firebase.storage
+        val storageRef: StorageReference = storage.reference.child(ref)
+        var localFile = File.createTempFile("test_file", "jpg")
+        storageRef.getFile(localFile)
+            .addOnSuccessListener {
+                Log.d("ImgDownload", "Success")
+            }
+            .addOnFailureListener{ exception ->
+                Log.e("FirebaseStorage", "Error downloading image", exception)
+            }
+        return localFile
     }
 
 }

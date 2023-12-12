@@ -142,7 +142,70 @@ fun foundPostCreationForm(
         horizontalAlignment = Alignment.CenterHorizontally){
 
         // Image Upload
-        cameraButton()
+        // The accent color
+        val accentColor = MaterialTheme.colorScheme.primary
+
+        // Camera launcher
+        val cameraLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.TakePicturePreview(),
+            onResult = { newImage ->
+                imgBitmap = newImage
+            })
+        // Permission Launcher
+        val permissionLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (isGranted) {
+                cameraLauncher.launch()
+            }
+        }
+        // Button
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(300.dp, 250.dp)
+                    .border(width = 2.dp, color = accentColor),
+                contentAlignment = Alignment.Center
+            ) {
+                if (imgBitmap == null) {
+                    Icon(
+                        painterResource(id = R.drawable.baseline_image_24),
+                        contentDescription = null,
+                        modifier = Modifier.size(60.dp, 50.dp),
+                        tint = accentColor
+                    )
+                } else {
+                    Image(
+                        bitmap = imgBitmap!!.asImageBitmap(),
+                        contentDescription = null,
+                        modifier = Modifier.size(300.dp, 250.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+            }
+            Button(
+                onClick = {
+                    val permissionCheckResult =
+                        ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                    if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+                        // Permission is already granted
+                        cameraLauncher.launch()
+                    } else {
+                        //Launches permission request
+                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
+                }
+            ) {
+                Icon(
+                    painterResource(id = R.drawable.baseline_camera_alt_24),
+                    contentDescription = null
+                )
+            }
+        }
 
         // Item TextField
         OutlinedTextField(value = item,
@@ -310,8 +373,7 @@ fun foundPostCreationForm(
             onValueChange = {additionalInfo = it},
             modifier = Modifier.width(textFieldSize)
         )
-        // Sumbit and Cancel buttons
-//        Spacer(modifier = Modifier.height(50.dp))
+        // Submit and Cancel buttons
         Row(modifier = Modifier.padding(16.dp),
             horizontalArrangement = Arrangement.SpaceAround){
             Button(onClick = {cancelCreation()},
@@ -320,13 +382,15 @@ fun foundPostCreationForm(
                 Text("Cancel")
             }
             Button(onClick = {
-                if (item.isNotEmpty() && additionalInfo.isNotEmpty() && location.isNotEmpty()) {
+                if (item.isNotEmpty() && additionalInfo.isNotEmpty() && location.isNotEmpty() && imgBitmap != null) {
+                    var imgRef = VM.updateFoundPostImage(imgBitmap!!)
                     VM.updateFoundPost(
                         hashMapOf(
                             FoundPost.ITEM to item,
                             FoundPost.ADDITIONAL_INFO to additionalInfo,
                             FoundPost.LOCATION to GeoPoint(markerState.position.latitude, markerState.position.longitude),
-                            FoundPost.LOCATION_NAME to if (isOther) otherLocation else location
+                            FoundPost.LOCATION_NAME to if (isOther) otherLocation else location,
+                            FoundPost.IMG_SRC to imgRef
                         )
                     )
                     VM.createFoundPost()
@@ -343,73 +407,6 @@ fun foundPostCreationForm(
 
 }
 
-@Composable
-fun cameraButton(){
-    // The accent color
-    val accentColor = MaterialTheme.colorScheme.primary
-
-    // Will store the image
-    var bitmap by remember {
-        mutableStateOf<Bitmap?>(null)
-    }
-    // Camera launcher
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview(),
-        onResult = {newImage ->
-            bitmap = newImage
-        })
-    // Permission Launcher
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ){isGranted ->
-        if(isGranted){
-            cameraLauncher.launch()
-        }
-    }
-    // Button
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Box(modifier = Modifier
-            .size(300.dp, 250.dp)
-            .border(width = 2.dp, color = accentColor),
-            contentAlignment = Alignment.Center){
-            if (bitmap == null){
-                Icon(
-                    painterResource(id = R.drawable.baseline_image_24),
-                    contentDescription = null,
-                    modifier = Modifier.size(60.dp,50.dp),
-                    tint =  accentColor
-                )
-            }else{
-                Image(bitmap = bitmap!!.asImageBitmap(),
-                    contentDescription = null,
-                    modifier = Modifier.size(300.dp, 250.dp),
-                    contentScale = ContentScale.Crop)
-            }
-
-        }
-        val context = LocalContext.current
-        Button(
-            onClick = {
-                val permissionCheckResult =
-                    ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
-                if (permissionCheckResult == PackageManager.PERMISSION_GRANTED){
-                    // Permission is already granted
-                    cameraLauncher.launch()
-                }else{
-                    //Launches permission request
-                    permissionLauncher.launch(Manifest.permission.CAMERA)
-                }
-            }
-        ){
-            Icon(
-                painterResource(id = R.drawable.baseline_camera_alt_24),
-                contentDescription = null)
-        }
-    }
-}
 private fun getCurrentLocation(context: Context, callback: (Double, Double)->Unit){
     // TODO:
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
