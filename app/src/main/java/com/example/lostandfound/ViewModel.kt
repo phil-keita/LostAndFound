@@ -325,19 +325,15 @@ class LafViewModel: ViewModel(){
 
     private val _lostpost = MutableLiveData<Map<String, Any>>()
     val lostpost: LiveData<Map<String, Any>> = _lostpost
-
     private val _lostposts = MutableLiveData<List<Map<String, Any>>>(emptyList())
     val lostposts: LiveData<List<Map<String, Any>>> = _lostposts
-
     init {
         getLostPosts()
     }
-
     //updates the post during input
     fun updateLostPost(lostpost: Map<String, Any>) {
         _lostpost.value = lostpost
     }
-
     //sends post to firebase
     fun addLostPost() {
         val lostpost: Map<String, Any> = _lostpost.value ?: throw IllegalArgumentException("post empty")
@@ -357,10 +353,6 @@ class LafViewModel: ViewModel(){
             }
         }
     }
-
-
-
-
     //gets the posts from firebase
     private fun getLostPosts() {
         Firebase.firestore.collection(LostPost.LOSTPOSTS)
@@ -386,12 +378,10 @@ class LafViewModel: ViewModel(){
                 updateLostPosts(list)
             }
     }
-
     //Update the list after getting the details from firestore
     private fun updateLostPosts(list: MutableList<Map<String, Any>>) {
         _lostposts.value = list.asReversed()
     }
-
     suspend fun getUsernameByUid(uid: String): String? {
         val db = FirebaseFirestore.getInstance()
         var username: String? = null
@@ -421,7 +411,7 @@ class LafViewModel: ViewModel(){
     val conversations: LiveData<MutableList<Map<String, Any>>> = _conversations
 
     init {
-        getConversations()
+//        getConversations()
     }
 
     /**
