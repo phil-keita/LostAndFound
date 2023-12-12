@@ -405,8 +405,8 @@ class LafViewModel: ViewModel(){
     private val _conversation = MutableLiveData<Map<String, Any>>()
     val conversation: LiveData<Map<String, Any>> = _conversation
     // Conversations
-    private val _conversations = MutableLiveData<List<Map<String, Any>>>(emptyList())
-    val conversations: LiveData<List<Map<String, Any>>> = _conversations
+    private val _conversations = MutableLiveData(emptyList<Map<String, Any>>().toMutableList())
+    val conversations: LiveData<MutableList<Map<String, Any>>> = _conversations
 
     init {
         getConversations()
