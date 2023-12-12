@@ -105,7 +105,8 @@ class LafViewModel: ViewModel(){
             }
     }
 
-    //Locations handler (Predefined locations saved in firebase that are used in dropdown selections)
+    // LOCATION HANDLERS (Predefined locations saved in firebase that are used in dropdown selections)
+
     private val _locations = MutableLiveData<List<Map<String, Any>>>(emptyList())
     val locations: LiveData<List<Map<String, Any>>> = _locations
     init{
@@ -122,9 +123,7 @@ class LafViewModel: ViewModel(){
                     Log.w(Location.TAG, "Listen failed.", e)
                     return@addSnapshotListener
                 }
-
                 val list = mutableListOf<Map<String, Any>>()
-
                 if (value != null) {
                     for (doc in value) {
                         val data = doc.data
@@ -141,7 +140,7 @@ class LafViewModel: ViewModel(){
         _locations.value = list.asReversed()
     }
 
-    // Found Page Handlers
+    // FOUND PAGE HANDLERS
 
     // Found Post
     private val _foundpost = MutableLiveData<Map<String, Any>>()
@@ -177,9 +176,8 @@ class LafViewModel: ViewModel(){
         //Success or failure
         uploadTask.addOnSuccessListener {
             // Handle successful upload
-            Log.d("IMG Upload", "Succeed: ")
+            Log.d("IMG Upload", "Success")
         }.addOnFailureListener {
-            //TODO: Add failure toast
             Log.d("IMGUpload", "Failed")
         }
         return imgPath
@@ -210,7 +208,9 @@ class LafViewModel: ViewModel(){
         }
     }
 
-    //gets the posts from firebase
+    /**
+     * Get all found posts
+     */
     private fun getFoundPosts() {
         Firebase.firestore.collection(FoundPost.FOUNDPOSTS)
             .orderBy(FoundPost.SENT_ON)
@@ -219,9 +219,7 @@ class LafViewModel: ViewModel(){
                     Log.w(FoundPost.TAG, "Listen failed.", e)
                     return@addSnapshotListener
                 }
-
                 val list = mutableListOf<Map<String, Any>>()
-
                 if (value != null) {
                     for (doc in value) {
                         val data = doc.data
@@ -231,19 +229,22 @@ class LafViewModel: ViewModel(){
                         list.add(data)
                     }
                 }
-
                 updateFoundPosts(list)
             }
     }
 
-    //Update the list after getting the details from firestore
+    /**
+     * Update list after pulling from firestore
+     */
     private fun updateFoundPosts(list: MutableList<Map<String, Any>>) {
         _foundposts.value = list.asReversed()
     }
 
+    // MESSAGE HANDLERS
 
     init {
-        getMessages()
+//        getMessages()
+        getConversations()
     }
 
     private val _message = MutableLiveData("")
@@ -274,7 +275,11 @@ class LafViewModel: ViewModel(){
     }
 
     //gets the message from firebase
-    private fun getMessages() {
+    private fun getMessages(convoIndex: Int) {
+        var convo: Map<String, Any>? = _conversations.value?.get(convoIndex)
+        if (convo != null){
+            val docRef: List<DocumentReference> = convo[Conversation.MESSAGES] as List<DocumentReference>
+        }
         Firebase.firestore.collection(LAFMessage.MESSAGES)
             .orderBy(LAFMessage.SENT_ON)
             .addSnapshotListener { value, e ->
@@ -396,11 +401,12 @@ class LafViewModel: ViewModel(){
 
     // Conversation handler
 
+    // Conversation
     private val _conversation = MutableLiveData<Map<String, Any>>()
     val conversation: LiveData<Map<String, Any>> = _conversation
-    // Found Posts
-    private val _conversations = MutableLiveData<Map<Int, Any>>()
-    val conversations: LiveData<Map<Int, Any>> = _conversations
+    // Conversations
+    private val _conversations = MutableLiveData<List<Map<String, Any>>>(emptyList())
+    val conversations: LiveData<List<Map<String, Any>>> = _conversations
 
     init {
         getConversations()
@@ -443,6 +449,7 @@ class LafViewModel: ViewModel(){
                     return@addSnapshotListener
                 }
                 if (value != null) {
+                    var list = mutableListOf<Map<String, Any>>()
                     var convos: List<DocumentReference> = value.getField(DataToDB.CONVERSATIONS)!!
                     for(convo in convos){
                         convo
@@ -452,22 +459,16 @@ class LafViewModel: ViewModel(){
                                     return@addSnapshotListener
                                 }
                                 if (value != null){
-
+                                    list.add(value.data!!)
                                 }
                             }
                     }
-                    updateConversations(convos as Map<Int, Any>)
+                    updateConversations(list)
                 }
-
             }
     }
 
-    private fun updateConversations(convos: Map<Int, Any>) {
-        _conversations.value = convos
+    private fun updateConversations(list: MutableList<Map<String, Any>>) {
+        _conversations.value = list.asReversed()
     }
-
-    private fun getConversationList(){
-
-    }
-
 }
