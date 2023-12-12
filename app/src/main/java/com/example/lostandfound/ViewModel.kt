@@ -38,6 +38,7 @@ import io.grpc.Context.Storage
 import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.util.UUID
 import java.util.concurrent.CancellationException
 
@@ -166,7 +167,7 @@ class LafViewModel: ViewModel(){
         //Creating unique image name
         var unique = UUID.randomUUID()
         // Storage path
-        val imgPath = "images/$unique.jpg"
+        var imgPath = "images%2F$unique.jpg?alt=media"
         val imageRef = storageRef.child("images/$unique.jpg")
         // Uploading
         val uploadTask = imageRef.putBytes(data)
@@ -390,21 +391,23 @@ class LafViewModel: ViewModel(){
         return username
     }
 
-    /**
-     * Returns an image from firebase
-     */
-    fun getImage(ref: String):File{
-        val storage = Firebase.storage
-        val storageRef: StorageReference = storage.reference.child(ref)
-        var localFile = File.createTempFile("test_file", "jpg")
-        storageRef.getFile(localFile)
-            .addOnSuccessListener {
-                Log.d("ImgDownload", "Success")
-            }
-            .addOnFailureListener{ exception ->
-                Log.e("FirebaseStorage", "Error downloading image", exception)
-            }
-        return localFile
-    }
+//    /**
+//     * Returns an image from firebase
+//     */
+//    fun getImage(ref: String):File{
+//        val storage = Firebase.storage
+//        val storageRef: StorageReference = storage.reference.child(ref)
+//        var localFile = File.createTempFile("test",".jpeg")
+////        var localFile = File("/res/drawable")
+////        , File("/res/drawable")
+//        storageRef.getFile(localFile)
+//            .addOnSuccessListener {
+//                Log.d("ImgDownload", "Download Success: ")
+//            }
+//            .addOnFailureListener{ exception ->
+//                Log.e("FirebaseStorage", "Error downloading image", exception)
+//            }
+//        return localFile
+//    }
 
 }
