@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -38,6 +37,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,14 +56,19 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.lostandfound.LafViewModel
+import com.example.lostandfound.NavScreens
 import com.example.lostandfound.R
+import com.example.lostandfound.model.FoundPost
+import com.example.lostandfound.model.LostPost
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.GeoPoint
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
+import com.example.lostandfound.model.Location
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,6 +76,9 @@ import com.google.maps.android.compose.MarkerState
 fun foundPostCreationForm(
     VM: LafViewModel,
     cancelCreation: () -> Unit) {
+
+    //List of all predefined locations
+    val locations: List<Map<String, Any>> by VM.locations.observeAsState(initial = emptyList())
 
     // Form values
     var item by remember {
@@ -85,12 +93,9 @@ fun foundPostCreationForm(
     var locationCoordinates by remember {
         mutableStateOf<LatLng>(LatLng(41.155298,-80.079247))
     }
-//    var latitude by remember {
-//        mutableStateOf(41.155298)
-//    }
-//    var longitude by remember {
-//        mutableStateOf(-80.079247)
-//    }
+    var predefinedCoordinates by remember {
+        mutableStateOf<LatLng>(LatLng(41.155298,-80.079247))
+    }
     var isOther by remember{
         mutableStateOf(false)
     }
@@ -137,7 +142,70 @@ fun foundPostCreationForm(
         horizontalAlignment = Alignment.CenterHorizontally){
 
         // Image Upload
-        cameraButton()
+        // The accent color
+        val accentColor = MaterialTheme.colorScheme.primary
+
+        // Camera launcher
+        val cameraLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.TakePicturePreview(),
+            onResult = { newImage ->
+                imgBitmap = newImage
+            })
+        // Permission Launcher
+        val permissionLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (isGranted) {
+                cameraLauncher.launch()
+            }
+        }
+        // Button
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(300.dp, 250.dp)
+                    .border(width = 2.dp, color = accentColor),
+                contentAlignment = Alignment.Center
+            ) {
+                if (imgBitmap == null) {
+                    Icon(
+                        painterResource(id = R.drawable.baseline_image_24),
+                        contentDescription = null,
+                        modifier = Modifier.size(60.dp, 50.dp),
+                        tint = accentColor
+                    )
+                } else {
+                    Image(
+                        bitmap = imgBitmap!!.asImageBitmap(),
+                        contentDescription = null,
+                        modifier = Modifier.size(300.dp, 250.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+            }
+            Button(
+                onClick = {
+                    val permissionCheckResult =
+                        ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                    if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+                        // Permission is already granted
+                        cameraLauncher.launch()
+                    } else {
+                        //Launches permission request
+                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
+                }
+            ) {
+                Icon(
+                    painterResource(id = R.drawable.baseline_camera_alt_24),
+                    contentDescription = null
+                )
+            }
+        }
 
         // Item TextField
         OutlinedTextField(value = item,
@@ -174,41 +242,18 @@ fun foundPostCreationForm(
             ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(
-                    text = { Text("HBL") },
-                    onClick ={
-                        location = "HBL"
-                        expanded = false
-                    })
-                Divider()
-                DropdownMenuItem(
-                    text = { Text("SHAL") },
-                    onClick ={
-                        location = "SHAL"
-                        expanded = false
-                    })
-                Divider()
-                DropdownMenuItem(
-                    text = { Text("STEM") },
-                    onClick ={
-                        location = "STEM"
-                        expanded = false
-                    })
-                Divider()
-                DropdownMenuItem(
-                    text = { Text("PLC") },
-                    onClick ={
-                        location = "PLC"
-                        expanded = false
-                    })
-                Divider()
-                DropdownMenuItem(
-                    text = { Text("PEW") },
-                    onClick ={
-                        location = "PEW"
-                        expanded = false
-                    })
-                Divider()
+                for (loc in locations) {
+                    DropdownMenuItem(
+                        text = { Text("${loc[Location.LOCATION_NAME]}") },
+                        onClick ={
+                            location = loc[Location.LOCATION_NAME] as String
+                            var coor = loc[Location.LOCATION] as GeoPoint
+                            predefinedCoordinates = LatLng(coor.latitude, coor.longitude)
+                            isOther = false
+                            expanded = false
+                        })
+                    Divider()
+                }
                 DropdownMenuItem(
                     text = { Text("Other") },
                     onClick ={
@@ -216,9 +261,9 @@ fun foundPostCreationForm(
                         expanded = false
                         isOther = true
                     })
-                Divider()
             }
         }
+
         // Show Map Checkbox
         Row(
             modifier = Modifier
@@ -227,11 +272,18 @@ fun foundPostCreationForm(
             Checkbox(checked = showMap, onCheckedChange = {
                 showMap = it
             })
-            Text("Pin location on Map")
+            Text("Pin location on Map (Click on location)")
         }
 
+        // Camera position
+        var cameraPosition = CameraPositionState(
+            position = CameraPosition.fromLatLngZoom(locationCoordinates, 17f)
+        )
+        // Marker state (keeps track of where marker is)
+        var markerState = MarkerState(position = locationCoordinates)
+
         // Map
-        if(showMap){
+        if(showMap && isOther){
             if(hasLocationPermission(context)){
                 // Permission already granted, update the location
                 getCurrentLocation(context) { lat, lgt ->
@@ -243,21 +295,56 @@ fun foundPostCreationForm(
                     Manifest.permission.ACCESS_FINE_LOCATION
                 )
             }
-            // Camera position
-            var cameraPosition = CameraPositionState(
+
+            // Updating values for map
+            cameraPosition = CameraPositionState(
                 position = CameraPosition.fromLatLngZoom(locationCoordinates, 17f)
             )
+            markerState = MarkerState(position = locationCoordinates)
+
+            // The actual map
             GoogleMap(
                 modifier = Modifier
                     .height(300.dp),
-                cameraPositionState = cameraPosition
+                cameraPositionState = cameraPosition,
+                onMapClick = {coordinates ->
+                    cameraPosition.position = CameraPosition.fromLatLngZoom(coordinates, 17f)
+                    markerState.position = coordinates
+                }
             ){
                 Marker(
-                    state = MarkerState(position = locationCoordinates),
+                    state = markerState,
                     draggable = true,
-                    title = "Your Location",
-                    snippet = "Marker in GCC",
+                    title = "Found here",
+                    snippet = "The item was found here",
                 )
+
+            }
+        }
+        else if(showMap){
+            // Updating values for map
+            cameraPosition = CameraPositionState(
+                position = CameraPosition.fromLatLngZoom(predefinedCoordinates, 17f)
+            )
+            markerState = MarkerState(position = predefinedCoordinates)
+
+            // The actual map
+            GoogleMap(
+                modifier = Modifier
+                    .height(300.dp),
+                cameraPositionState = cameraPosition,
+                onMapClick = {coordinates ->
+                    cameraPosition.position = CameraPosition.fromLatLngZoom(coordinates, 17f)
+                    markerState.position = coordinates
+                }
+            ){
+                Marker(
+                    state = markerState,
+                    draggable = true,
+                    title = "Found here",
+                    snippet = "The item was found here",
+                )
+
             }
         }
 
@@ -286,8 +373,7 @@ fun foundPostCreationForm(
             onValueChange = {additionalInfo = it},
             modifier = Modifier.width(textFieldSize)
         )
-        // Sumbit and Cancel buttons
-//        Spacer(modifier = Modifier.height(50.dp))
+        // Submit and Cancel buttons
         Row(modifier = Modifier.padding(16.dp),
             horizontalArrangement = Arrangement.SpaceAround){
             Button(onClick = {cancelCreation()},
@@ -295,14 +381,24 @@ fun foundPostCreationForm(
             ){
                 Text("Cancel")
             }
-            Button(onClick = {VM.createFoundPost(
-                item = item,
-                locationName = if (isOther) otherLocation else location,
-                location = locationCoordinates,
-                additionalInfo = additionalInfo,
-                imgBitmap = imgBitmap?.asImageBitmap() ?: null
-            )
-                             cancelCreation()},
+            Button(onClick = {
+                if (item.isNotEmpty() && additionalInfo.isNotEmpty() && location.isNotEmpty() && imgBitmap != null) {
+                    var imgRef = VM.updateFoundPostImage(imgBitmap!!)
+                    VM.updateFoundPost(
+                        hashMapOf(
+                            FoundPost.ITEM to item,
+                            FoundPost.ADDITIONAL_INFO to additionalInfo,
+                            FoundPost.LOCATION to GeoPoint(markerState.position.latitude, markerState.position.longitude),
+                            FoundPost.LOCATION_NAME to if (isOther) otherLocation else location,
+                            FoundPost.IMG_SRC to imgRef
+                        )
+                    )
+                    VM.createFoundPost()
+                    cancelCreation()
+                } else {
+                    // Show an error message or a dialog here
+                }
+            },
                 modifier = Modifier.padding(16.dp)){
                 Text("Post")
             }
@@ -311,78 +407,6 @@ fun foundPostCreationForm(
 
 }
 
-@Composable
-fun cameraButton(){
-    // The accent color
-    val accentColor = MaterialTheme.colorScheme.primary
-
-    // Will store the image
-    var bitmap by remember {
-        mutableStateOf<Bitmap?>(null)
-    }
-    // Camera launcher
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview(),
-        onResult = {newImage ->
-            bitmap = newImage
-        })
-    // Permission Launcher
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ){isGranted ->
-        if(isGranted){
-            cameraLauncher.launch()
-        }
-    }
-    // Button
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Box(modifier = Modifier
-            .size(300.dp, 250.dp)
-            .border(width = 2.dp, color = accentColor),
-            contentAlignment = Alignment.Center){
-            if (bitmap == null){
-                Icon(
-                    painterResource(id = R.drawable.baseline_image_24),
-                    contentDescription = null,
-                    modifier = Modifier.size(60.dp,50.dp),
-                    tint =  accentColor
-                )
-            }else{
-                Image(bitmap = bitmap!!.asImageBitmap(),
-                    contentDescription = null,
-                    modifier = Modifier.size(300.dp, 250.dp),
-                    contentScale = ContentScale.Crop)
-            }
-//            bitmap?.let{
-//                Image(bitmap = it.asImageBitmap(),
-//                    contentDescription = null,
-//                    contentScale = ContentScale.Crop)
-//            }
-
-        }
-        val context = LocalContext.current
-        Button(
-            onClick = {
-                val permissionCheckResult =
-                    ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
-                if (permissionCheckResult == PackageManager.PERMISSION_GRANTED){
-                    // Permission is already granted
-                    cameraLauncher.launch()
-                }else{
-                    //Launches permission request
-                    permissionLauncher.launch(Manifest.permission.CAMERA)
-                }
-            }
-        ){
-            Icon(
-                painterResource(id = R.drawable.baseline_camera_alt_24),
-                contentDescription = null)
-        }
-    }
-}
 private fun getCurrentLocation(context: Context, callback: (Double, Double)->Unit){
     // TODO:
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)

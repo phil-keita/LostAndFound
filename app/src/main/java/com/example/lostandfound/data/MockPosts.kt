@@ -17,17 +17,17 @@ class DummyPosts {
 //            )
 //    }
 
-    fun getDummyFoundPosts(): List<FoundPost>{
-        return listOf(
-            FoundPost("Earbuds", 0, "HBL Library"),
-            FoundPost("Earbuds", 0, "HBL Library"),
-            FoundPost("Earbuds", 0, "HBL Library"),
-            FoundPost("Earbuds", 0, "HBL Library"),
-            FoundPost("Earbuds", 0, "HBL Library"),
-            FoundPost("Earbuds", 0, "HBL Library"),
-            FoundPost("Earbuds", 0, "HBL Library"),
-            FoundPost("Earbuds", 0, "HBL Library")
-        )
-    }
+//    fun getDummyFoundPosts(): List<FoundPost>{
+//        return listOf(
+//            FoundPost("Earbuds", 0, "HBL Library"),
+//            FoundPost("Earbuds", 0, "HBL Library"),
+//            FoundPost("Earbuds", 0, "HBL Library"),
+//            FoundPost("Earbuds", 0, "HBL Library"),
+//            FoundPost("Earbuds", 0, "HBL Library"),
+//            FoundPost("Earbuds", 0, "HBL Library"),
+//            FoundPost("Earbuds", 0, "HBL Library"),
+//            FoundPost("Earbuds", 0, "HBL Library")
+//        )
+//    }
 }
 
