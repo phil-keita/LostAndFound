@@ -21,5 +21,6 @@ object DataToDB{
     const val TAG = "LAF"
     const val UID = "uid"
     const val USERNAME = "username"
+    const val CONVERSATIONS = "conversation_list"
     const val IS_CURRENT_USER = "is_current_user"
 }

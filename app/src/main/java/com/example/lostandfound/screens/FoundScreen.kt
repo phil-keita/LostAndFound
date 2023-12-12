@@ -193,24 +193,10 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
                     .height(200.dp)){
                 // Item Image
                 var baseurl = "https://firebasestorage.googleapis.com/v0/b/login-register-firebase-86e06.appspot.com/o/"
-                var painter = painterResource(id = R.drawable.baseline_camera_alt_24)
                 var url = ""
                 if(post[FoundPost.IMG_SRC] != null) {
                     url = "$baseurl${post[FoundPost.IMG_SRC]}"
-//                    val img = VM.getImage(post[FoundPost.IMG_SRC] as String)
-//                    Log.d("File Download", "File downloaded: ${img.path}")
-//                    AsyncImage(
-//                        model = "https://firebasestorage.googleapis.com/v0/b/login-register-firebase-86e06.appspot.com/o/images%2F43b5b4f8-2e37-473f-8bc8-67f5ad3d43cc.jpg?alt=media&token=96e7fa63-be43-440e-ae40-17cbef90bf38",
-//                        contentDescription = null
-//                    )
-//                Image(painter = painter, contentDescription = null,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(200.dp),
-//                    contentScale = ContentScale.Crop)
-                    Log.d("Image Fetching", "$url")
                 }
-
                 AsyncImage(
                     model = url,
                     contentDescription = null,

@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.lostandfound.model.Conversation
 import com.example.lostandfound.model.FoundPost
 import com.example.lostandfound.model.LAFMessage
 import com.example.lostandfound.model.Location
@@ -28,9 +29,11 @@ import java.sql.Date
 import java.sql.Time
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.getField
 import com.google.firebase.firestore.local.ReferenceSet
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.storage
@@ -391,23 +394,80 @@ class LafViewModel: ViewModel(){
         return username
     }
 
-//    /**
-//     * Returns an image from firebase
-//     */
-//    fun getImage(ref: String):File{
-//        val storage = Firebase.storage
-//        val storageRef: StorageReference = storage.reference.child(ref)
-//        var localFile = File.createTempFile("test",".jpeg")
-////        var localFile = File("/res/drawable")
-////        , File("/res/drawable")
-//        storageRef.getFile(localFile)
-//            .addOnSuccessListener {
-//                Log.d("ImgDownload", "Download Success: ")
-//            }
-//            .addOnFailureListener{ exception ->
-//                Log.e("FirebaseStorage", "Error downloading image", exception)
-//            }
-//        return localFile
-//    }
+    // Conversation handler
+
+    private val _conversation = MutableLiveData<Map<String, Any>>()
+    val conversation: LiveData<Map<String, Any>> = _conversation
+    // Found Posts
+    private val _conversations = MutableLiveData<Map<Int, Any>>()
+    val conversations: LiveData<Map<Int, Any>> = _conversations
+
+    init {
+        getConversations()
+    }
+
+    /**
+     * Updates the post during input
+     */
+    fun updateConversation(conversation: Map<String, Any>){
+        _conversation.value = conversation
+    }
+
+    /**
+     * Handles creation of a new found post.
+     * Send information of  new post to firebase
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createConversation(
+    ){
+        val conversation: Map<String, Any> = _conversation.value ?: throw IllegalArgumentException("post empty")
+        if (conversation.isNotEmpty()) {
+            Firebase.firestore.collection(Conversation.CONVERSATIONS).document().set(
+                hashMapOf(
+                    Conversation.MESSAGES to conversation[Conversation.MESSAGES],
+                    Conversation.USER1 to Firebase.auth.currentUser?.uid,
+                    Conversation.USER2 to conversation[Conversation.USER2]
+                )
+            ).addOnSuccessListener {
+                _conversation.value = emptyMap()
+            }
+        }
+    }
+
+    //gets the posts from firebase
+    private fun getConversations() {
+        Firebase.firestore.collection(DataToDB.USERS).document(Firebase.auth.currentUser?.uid.toString())
+            .addSnapshotListener { value, e ->
+                if (e != null) {
+                    Log.w(FoundPost.TAG, "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+                if (value != null) {
+                    var convos: List<DocumentReference> = value.getField(DataToDB.CONVERSATIONS)!!
+                    for(convo in convos){
+                        convo
+                            .addSnapshotListener{ value , e ->
+                                if (e != null) {
+                                    Log.w(FoundPost.TAG, "Listen failed.", e)
+                                    return@addSnapshotListener
+                                }
+                                if (value != null){
+
+                                }
+                            }
+                    }
+                    updateConversations(convos as Map<Int, Any>)
+                }
+
+            }
+    }
+
+    private fun updateConversations(convos: Map<Int, Any>) {
+        _conversations.value = convos
+    }
+
+    private fun getConversationList(){
+
+    }
 
 }
