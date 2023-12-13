@@ -177,7 +177,7 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context , db : FirebaseFires
             }
             // This will be yellow but nothing is wrong with it
             // In other words ... DONT TOUCH IT!! IT WORKS!!
-            composable(NavScreens.Found.route) { FoundThread(VM,{navController.navigate(NavScreens.FoundPostCreation.route)} ,{navController.navigate(NavScreens.Found.route)})
+            composable(NavScreens.Found.route) { FoundThread(VM,{navController.navigate(NavScreens.FoundPostCreation.route)})
             }
 //            composable(NavScreens.Chat.route) { conversations(VM = VM) }
             //composable(NavScreens.Chat.route){ Chat(VM = VM, conversation = VM.getConvo().orEmpty())}

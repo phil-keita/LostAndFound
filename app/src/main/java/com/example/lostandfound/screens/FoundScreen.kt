@@ -59,7 +59,7 @@ import kotlinx.coroutines.delay
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
-fun FoundThread(VM : LafViewModel, navToCreate: () -> Unit, navToMain: () -> Unit){
+fun FoundThread(VM : LafViewModel, navToCreate: () -> Unit){
     val foundposts: List<Map<String, Any>> by VM.foundposts.observeAsState(initial = emptyList())
 
         // Found Posts Cards
@@ -68,7 +68,7 @@ fun FoundThread(VM : LafViewModel, navToCreate: () -> Unit, navToMain: () -> Uni
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally){
                 items(foundposts){ post ->
-                    showFoundPost(VM = VM, post = post, navToMain)
+                    showFoundPost(VM = VM, post = post)
                 }
             }
             // Opens post creation screen
@@ -88,77 +88,7 @@ fun FoundThread(VM : LafViewModel, navToCreate: () -> Unit, navToMain: () -> Uni
 }
 
 @Composable
-fun FoundPostDetails(post: Map<String, Any>, navToMain: () -> Unit){
-    AlertDialog(
-        onDismissRequest = { navToMain },
-        title = {
-            Row(modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center){
-                Text(
-                    text="${post[FoundPost.ITEM]}",
-                    textAlign = TextAlign.Center)
-            }
-            },
-        text = {
-            Column {
-                Row(modifier = Modifier.padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Icon(painterResource(id = R.drawable.baseline_location_on_24), contentDescription = null)
-                    Text("${post[FoundPost.LOCATION_NAME]}")
-                }
-                val geo: GeoPoint = post[FoundPost.LOCATION] as GeoPoint
-                val location = LatLng(geo.latitude, geo.longitude)
-                val currentTimeMillis = remember { mutableStateOf(System.currentTimeMillis()) }
-
-                LaunchedEffect(key1 = currentTimeMillis) {
-                    while (true) {
-                        delay(1000)  // Update every second
-                        currentTimeMillis.value = System.currentTimeMillis()
-                    }
-                }
-
-                //pull time of post and reflect and format
-                val postTimeMillis = post[FoundPost.SENT_ON].toString().toLong()
-                val timeDiffHours = (currentTimeMillis.value - postTimeMillis) / (1000 * 60 * 60)
-                val timeDiffDays = timeDiffHours / 24
-                val timeIndicator = when {
-                    timeDiffHours < 1 -> "recent"
-                    timeDiffHours in 1 until 24 -> if (timeDiffHours == 1L) "1 hour ago" else "$timeDiffHours hours ago"
-                    timeDiffDays == 1L -> "1 day ago"
-                    else -> "$timeDiffDays days ago"
-                }
-                ShowMap(coordinates = location)
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically){
-                    Text(text = "$timeIndicator",
-                        color = Color.Gray,
-                        fontSize = 15.sp)
-                    Text(text = "Jon doe",
-                        color = Color.Gray)
-                }
-                Text(text = "${post[FoundPost.ADDITIONAL_INFO]}",
-                    modifier = Modifier.padding(16.dp))
-
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = {navToMain}) {
-                Text(text = "Cancel")
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = {}) {
-                Text(text = "Text Jon")
-            }
-        })
-}
-
-@Composable
-fun showFoundPost(VM : LafViewModel, post: Map<String, Any>, navToMain: () -> Unit){
+fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
     var showPostDetails by remember{mutableStateOf(false)}
 
     val currentTimeMillis = remember { mutableStateOf(System.currentTimeMillis()) }
@@ -185,7 +115,72 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>, navToMain: () -> Un
     }
 
     if(showPostDetails){
-        FoundPostDetails(post, navToMain)
+        AlertDialog(
+            onDismissRequest = { showPostDetails = false },
+            title = {
+                Row(modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center){
+                    Text(
+                        text="${post[FoundPost.ITEM]}",
+                        textAlign = TextAlign.Center)
+                }
+            },
+            text = {
+                Column {
+                    Row(modifier = Modifier.padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Icon(painterResource(id = R.drawable.baseline_location_on_24), contentDescription = null)
+                        Text("${post[FoundPost.LOCATION_NAME]}")
+                    }
+                    val geo: GeoPoint = post[FoundPost.LOCATION] as GeoPoint
+                    val location = LatLng(geo.latitude, geo.longitude)
+                    val currentTimeMillis = remember { mutableStateOf(System.currentTimeMillis()) }
+
+                    LaunchedEffect(key1 = currentTimeMillis) {
+                        while (true) {
+                            delay(1000)  // Update every second
+                            currentTimeMillis.value = System.currentTimeMillis()
+                        }
+                    }
+
+                    //pull time of post and reflect and format
+                    val postTimeMillis = post[FoundPost.SENT_ON].toString().toLong()
+                    val timeDiffHours = (currentTimeMillis.value - postTimeMillis) / (1000 * 60 * 60)
+                    val timeDiffDays = timeDiffHours / 24
+                    val timeIndicator = when {
+                        timeDiffHours < 1 -> "recent"
+                        timeDiffHours in 1 until 24 -> if (timeDiffHours == 1L) "1 hour ago" else "$timeDiffHours hours ago"
+                        timeDiffDays == 1L -> "1 day ago"
+                        else -> "$timeDiffDays days ago"
+                    }
+                    ShowMap(coordinates = location)
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically){
+                        Text(text = "$timeIndicator",
+                            color = Color.Gray,
+                            fontSize = 15.sp)
+                        Text(text = "Jon doe",
+                            color = Color.Gray)
+                    }
+                    Text(text = "${post[FoundPost.ADDITIONAL_INFO]}",
+                        modifier = Modifier.padding(16.dp))
+
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {showPostDetails = false}) {
+                    Text(text = "Cancel")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {}) {
+                    Text(text = "Text Jon")
+                }
+            })
     }
     Card(
         modifier = Modifier.padding(20.dp)
