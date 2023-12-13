@@ -277,8 +277,3 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
         }
     }
 }
-//@Preview
-//@Composable
-//fun FoundThreadPreview() {
-//    FoundThread()
-//}
