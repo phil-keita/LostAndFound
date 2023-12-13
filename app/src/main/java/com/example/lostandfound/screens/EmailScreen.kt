@@ -52,7 +52,7 @@ fun Email(VM : LafViewModel) {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Notify the holder of your item",
+                    text = "Notify ${VM.nameOfPoster.value} has your ${VM.nameOfItem.value}",
                     style = MaterialTheme.typography.titleLarge,
                     color = md_theme_light_primary,
                     textAlign = TextAlign.Center
@@ -84,7 +84,18 @@ fun Email(VM : LafViewModel) {
                 )
 
                 Button(
-                    onClick = { /* Handle submit action here */ },
+                    onClick = {
+                        val i = Intent(Intent.ACTION_SEND)
+
+                        val emailAddress = arrayOf(VM.posterEmail.value)
+                        i.putExtra(Intent.EXTRA_EMAIL,emailAddress)
+                        i.putExtra(Intent.EXTRA_SUBJECT,emailSubject)
+                        i.putExtra(Intent.EXTRA_TEXT,emailBody)
+
+                        i.setType("message/rfc822")
+
+                        context.startActivity(Intent.createChooser(i,"Choose an Email client : "))
+                    },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text("Submit")
@@ -106,7 +117,7 @@ fun Email(VM : LafViewModel) {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Notify ${VM.nameOfPoster.value} has your ${VM.nameOfItem.value}",
+                    text = "Notify ${VM.nameOfPoster.value} that you found their ${VM.nameOfItem.value}",
                     style = MaterialTheme.typography.titleLarge,
                     color = md_theme_light_primary,
                     textAlign = TextAlign.Center
