@@ -44,6 +44,7 @@ import com.google.common.primitives.UnsignedInts.toLong
 import kotlinx.coroutines.delay
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LostThread(VM : LafViewModel, navToCreate: () -> Unit){
     val lostpost: Map<String, Any> by VM.lostpost.observeAsState(initial = emptyMap())
@@ -137,7 +138,7 @@ fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Button(onClick = {
-                    VM.createConversation()
+                    //VM.createConversation()
                 }){
                     Text("Found it!")
                 }
