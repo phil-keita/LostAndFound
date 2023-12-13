@@ -11,9 +11,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.lostandfound.model.Conversation
+//import com.example.lostandfound.model.Conversation
 import com.example.lostandfound.model.FoundPost
-import com.example.lostandfound.model.LAFMessage
+//import com.example.lostandfound.model.LAFMessage
 import com.example.lostandfound.model.Location
 import com.example.lostandfound.model.LostPost
 import com.example.lostandfound.presentation.sign_in.DataToDB
@@ -245,71 +245,71 @@ class LafViewModel: ViewModel(){
 //        getConversations()
     }
 
-    private val _message = MutableLiveData("")
-    val message: LiveData<String> = _message
-
-    private var _messages = MutableLiveData(emptyList<Map<String, Any>>().toMutableList())
-    val messages: LiveData<MutableList<Map<String, Any>>> = _messages
-
-    //updates the message during input
-    fun updateMessage(message: String) {
-        _message.value = message
-    }
-
-    //sends message to firebase
-    fun addMessage() {
-        val message: String = _message.value ?: throw IllegalArgumentException("message empty")
-        if (message.isNotEmpty()) {
-            Firebase.firestore.collection(LAFMessage.MESSAGES).document().set(
-                hashMapOf(
-                    LAFMessage.MESSAGE to message,
-                    LAFMessage.SENT_BY to Firebase.auth.currentUser?.uid,
-                    LAFMessage.SENT_ON to System.currentTimeMillis()
-                )
-            ).addOnSuccessListener {
-                _message.value = ""
-            }
-        }
-    }
-
-    //gets the message from firebase
-    private fun getMessages(convoIndex: Int) {
-        var convo: Map<String, Any>? = _conversations.value?.get(convoIndex)
-        if (convo != null){
-            Log.d("MessageGET", "Convo with index $convoIndex is not null")
-            val docRef: List<DocumentReference> = convo[Conversation.MESSAGES] as List<DocumentReference>
-            val list = emptyList<Map<String, Any>>().toMutableList()
-            for(ref in docRef){
-                ref
-                    .addSnapshotListener{ value, e ->
-                        if (e != null) {
-                            Log.w(LAFMessage.TAG, "Listen failed.", e)
-                            return@addSnapshotListener
-                        }
-                        if (value != null){
-                            Log.d("MessageGET", "Message document retrieved")
-                            var message: Map<String, Any>? = value.data
-                            if (message != null){
-                                Log.d("MessageGET", "Message document not null. Adding to list")
-                                list.add(message)
-                                updateMessages(list)
-                            }else{
-                                Log.d("MessageGET", "Message was null :(")
-                            }
-                        }
-                    }
-            }
-
-        }else{
-            Log.d("MessageGET", "Convo with index $convoIndex is null")
-        }
+//    private val _message = MutableLiveData("")
+//    val message: LiveData<String> = _message
 //
-    }
-    //Update the list after getting the details from firestore
-    private fun updateMessages(list: MutableList<Map<String, Any>>) {
-        _messages.value = list.asReversed()
-        Log.d("MessageGET", "messages updated: "+_messages.value.toString())
-    }
+//    private var _messages = MutableLiveData(emptyList<Map<String, Any>>().toMutableList())
+//    val messages: LiveData<MutableList<Map<String, Any>>> = _messages
+//
+//    //updates the message during input
+//    fun updateMessage(message: String) {
+//        _message.value = message
+//    }
+//
+//    //sends message to firebase
+//    fun addMessage() {
+//        val message: String = _message.value ?: throw IllegalArgumentException("message empty")
+//        if (message.isNotEmpty()) {
+//            Firebase.firestore.collection(LAFMessage.MESSAGES).document().set(
+//                hashMapOf(
+//                    LAFMessage.MESSAGE to message,
+//                    LAFMessage.SENT_BY to Firebase.auth.currentUser?.uid,
+//                    LAFMessage.SENT_ON to System.currentTimeMillis()
+//                )
+//            ).addOnSuccessListener {
+//                _message.value = ""
+//            }
+//        }
+//    }
+//
+//    //gets the message from firebase
+//    private fun getMessages(convoIndex: Int) {
+//        var convo: Map<String, Any>? = _conversations.value?.get(convoIndex)
+//        if (convo != null){
+//            Log.d("MessageGET", "Convo with index $convoIndex is not null")
+//            val docRef: List<DocumentReference> = convo[Conversation.MESSAGES] as List<DocumentReference>
+//            val list = emptyList<Map<String, Any>>().toMutableList()
+//            for(ref in docRef){
+//                ref
+//                    .addSnapshotListener{ value, e ->
+//                        if (e != null) {
+//                            Log.w(LAFMessage.TAG, "Listen failed.", e)
+//                            return@addSnapshotListener
+//                        }
+//                        if (value != null){
+//                            Log.d("MessageGET", "Message document retrieved")
+//                            var message: Map<String, Any>? = value.data
+//                            if (message != null){
+//                                Log.d("MessageGET", "Message document not null. Adding to list")
+//                                list.add(message)
+//                                updateMessages(list)
+//                            }else{
+//                                Log.d("MessageGET", "Message was null :(")
+//                            }
+//                        }
+//                    }
+//            }
+//
+//        }else{
+//            Log.d("MessageGET", "Convo with index $convoIndex is null")
+//        }
+////
+//    }
+//    //Update the list after getting the details from firestore
+//    private fun updateMessages(list: MutableList<Map<String, Any>>) {
+//        _messages.value = list.asReversed()
+//        Log.d("MessageGET", "messages updated: "+_messages.value.toString())
+//    }
 
 
     //Lost Page
@@ -392,101 +392,101 @@ class LafViewModel: ViewModel(){
         return username
     }
 
-    // Conversation handler
-
-    // Conversation
-    private val _conversation = MutableLiveData<Map<String, Any>>()
-    val conversation: LiveData<Map<String, Any>> = _conversation
-    // Conversations
-    private val _conversations = MutableLiveData(emptyList<Map<String, Any>>().toMutableList())
-    val conversations: LiveData<MutableList<Map<String, Any>>> = _conversations
-
-    init {
-        getConversations()
-
-    }
-
-    /**
-     * Updates the post during input
-     */
-    fun updateConversation(conversation: Map<String, Any>){
-        _conversation.value = conversation
-    }
-
-    /**
-     * Handles creation of a new found post.
-     * Send information of  new post to firebase
-     */
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createConversation(
-    ){
-        val conversation: Map<String, Any> = _conversation.value ?: throw IllegalArgumentException("convo empty")
-        if (conversation.isNotEmpty()) {
-            Firebase.firestore.collection(Conversation.CONVERSATIONS).document().set(
-                hashMapOf(
-                    Conversation.MESSAGES to conversation[Conversation.MESSAGES],
-                    Conversation.USER1 to Firebase.auth.currentUser?.uid,
-                    Conversation.USER2 to conversation[Conversation.USER2]
-                )
-            ).addOnSuccessListener {
-                _conversation.value = emptyMap()
-            }
-        }
-    }
-
-    //gets the posts from firebase
-    private fun getConversations() {
-        Firebase.firestore.collection(DataToDB.USERS)
-            .document(Firebase.auth.currentUser?.uid.toString())
-            .addSnapshotListener { value, e ->
-                if (e != null) {
-                    Log.w(Conversation.TAG, "Listen failed.", e)
-                    return@addSnapshotListener
-                }
-                if (value != null) {
-                    var list = mutableListOf<Map<String, Any>>()
-                    var user_info: Map<String, Any>? = value.data
-                    Log.d("Init Debug", user_info.toString())
-                    if(user_info != null){
-                        Log.d("Init Debug","Current user info loaded")
-                        var convo_list = user_info[DataToDB.CONVERSATIONS]
-                        if(convo_list !=null){
-                            val convoListAsDocRefs = convo_list as List<DocumentReference>
-                            Log.d("Init Debug",convoListAsDocRefs.toString())
-                            for(convo in convoListAsDocRefs){
-                                convo
-                                    .addSnapshotListener{ value , e ->
-                                        if (e != null) {
-                                            Log.w(FoundPost.TAG, "Listen failed.", e)
-                                            return@addSnapshotListener
-                                        }
-                                        if (value != null){
-                                            Log.d("Init Debug","Conversation Loaded")
-                                            var data = value.data
-                                            Log.d("Init Debug",data.toString())
-                                            list.add(data!!)
-                                            Log.d("Init Debug","list: "+list.toString())
-                                            updateConversations(list)
-                                        }
-                                    }
-
-                            }
-
-                        }else{
-                            Log.d("Init Debug", "convo_list is empty")
-                        }
-                    }else{
-                        Log.d("Init Debug","Current user info is empty")
-                    }
-                }else{
-                    Log.d("Init Debug","value is  empty")
-                }
-            }
-    }
-
-    private fun updateConversations(list: MutableList<Map<String, Any>>) {
-        _conversations.value = list.asReversed()
-        Log.d("Init Debug", "conversation updated init: "+_conversations.value.toString() + list.asReversed().toString())
-        getMessages(0)
-    }
+//    // Conversation handler
+//
+//    // Conversation
+//    private val _conversation = MutableLiveData<Map<String, Any>>()
+//    val conversation: LiveData<Map<String, Any>> = _conversation
+//    // Conversations
+//    private val _conversations = MutableLiveData(emptyList<Map<String, Any>>().toMutableList())
+//    val conversations: LiveData<MutableList<Map<String, Any>>> = _conversations
+//
+//    init {
+//        getConversations()
+//
+//    }
+//
+//    /**
+//     * Updates the post during input
+//     */
+//    fun updateConversation(conversation: Map<String, Any>){
+//        _conversation.value = conversation
+//    }
+//
+//    /**
+//     * Handles creation of a new found post.
+//     * Send information of  new post to firebase
+//     */
+//    @RequiresApi(Build.VERSION_CODES.O)
+//    fun createConversation(
+//    ){
+//        val conversation: Map<String, Any> = _conversation.value ?: throw IllegalArgumentException("convo empty")
+//        if (conversation.isNotEmpty()) {
+//            Firebase.firestore.collection(Conversation.CONVERSATIONS).document().set(
+//                hashMapOf(
+//                    Conversation.MESSAGES to conversation[Conversation.MESSAGES],
+//                    Conversation.USER1 to Firebase.auth.currentUser?.uid,
+//                    Conversation.USER2 to conversation[Conversation.USER2]
+//                )
+//            ).addOnSuccessListener {
+//                _conversation.value = emptyMap()
+//            }
+//        }
+//    }
+//
+//    //gets the posts from firebase
+//    private fun getConversations() {
+//        Firebase.firestore.collection(DataToDB.USERS)
+//            .document(Firebase.auth.currentUser?.uid.toString())
+//            .addSnapshotListener { value, e ->
+//                if (e != null) {
+//                    Log.w(Conversation.TAG, "Listen failed.", e)
+//                    return@addSnapshotListener
+//                }
+//                if (value != null) {
+//                    var list = mutableListOf<Map<String, Any>>()
+//                    var user_info: Map<String, Any>? = value.data
+//                    Log.d("Init Debug", user_info.toString())
+//                    if(user_info != null){
+//                        Log.d("Init Debug","Current user info loaded")
+//                        var convo_list = user_info[DataToDB.CONVERSATIONS]
+//                        if(convo_list !=null){
+//                            val convoListAsDocRefs = convo_list as List<DocumentReference>
+//                            Log.d("Init Debug",convoListAsDocRefs.toString())
+//                            for(convo in convoListAsDocRefs){
+//                                convo
+//                                    .addSnapshotListener{ value , e ->
+//                                        if (e != null) {
+//                                            Log.w(FoundPost.TAG, "Listen failed.", e)
+//                                            return@addSnapshotListener
+//                                        }
+//                                        if (value != null){
+//                                            Log.d("Init Debug","Conversation Loaded")
+//                                            var data = value.data
+//                                            Log.d("Init Debug",data.toString())
+//                                            list.add(data!!)
+//                                            Log.d("Init Debug","list: "+list.toString())
+//                                            updateConversations(list)
+//                                        }
+//                                    }
+//
+//                            }
+//
+//                        }else{
+//                            Log.d("Init Debug", "convo_list is empty")
+//                        }
+//                    }else{
+//                        Log.d("Init Debug","Current user info is empty")
+//                    }
+//                }else{
+//                    Log.d("Init Debug","value is  empty")
+//                }
+//            }
+//    }
+//
+//    private fun updateConversations(list: MutableList<Map<String, Any>>) {
+//        _conversations.value = list.asReversed()
+//        Log.d("Init Debug", "conversation updated init: "+_conversations.value.toString() + list.asReversed().toString())
+//        getMessages(0)
+//    }
 }

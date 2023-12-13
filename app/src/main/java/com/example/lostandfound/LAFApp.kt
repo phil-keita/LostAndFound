@@ -41,12 +41,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.lostandfound.presentation.sign_in.GoogleAuthUiClient
-import com.example.lostandfound.screens.Chat
+//import com.example.lostandfound.screens.Chat
+import com.example.lostandfound.screens.Email
 import com.example.lostandfound.screens.LostThread
 import com.example.lostandfound.screens.FoundThread
 import com.example.lostandfound.screens.ProfileScreen
 import com.example.lostandfound.screens.SignInScreen
-import com.example.lostandfound.screens.conversations
+//import com.example.lostandfound.screens.conversations
 import com.example.lostandfound.screens.foundPostCreationForm
 import com.example.lostandfound.screens.lostPostCreationForm
 import com.google.android.gms.auth.api.identity.Identity
@@ -59,7 +60,8 @@ sealed class NavScreens(val route: String) {
     object SignUp : NavScreens(route = "SignUp")
     object Lost : NavScreens(route = "Lost")
     object Found : NavScreens(route = "Found")
-    object Chat : NavScreens(route = "Chat")
+//    object Chat : NavScreens(route = "Chat")
+    object Email : NavScreens(route = "Email")
     object Profile : NavScreens(route = "Profile")
     object FoundPostCreation: NavScreens(route = "FoundPostCreation")
     object LostPostCreation: NavScreens(route = "LostPostCreation")
@@ -81,7 +83,7 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context , db : FirebaseFires
     val VM = viewModel<LafViewModel>()
     val vmState by VM.state.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val items = listOf(NavScreens.Lost, NavScreens.Found, NavScreens.Chat, NavScreens.Profile)
+    val items = listOf(NavScreens.Lost, NavScreens.Found, NavScreens.Email, NavScreens.Profile)
     var state by remember { mutableIntStateOf(3) }
     var userSignedIn by remember {
         mutableStateOf(false)
@@ -109,7 +111,7 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context , db : FirebaseFires
                                         when(screen.route){
                                             NavScreens.Lost.route -> Icon(Icons.Filled.Search, contentDescription = null)
                                             NavScreens.Found.route -> Icon(Icons.Filled.LocationOn, contentDescription = null)
-                                            NavScreens.Chat.route -> Icon(Icons.Filled.Email, contentDescription = null)
+                                            NavScreens.Email.route -> Icon(Icons.Filled.Email, contentDescription = null)
                                             NavScreens.Profile.route -> Icon(Icons.Filled.Person, contentDescription = null)
                                         }
                                     },
@@ -179,8 +181,11 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context , db : FirebaseFires
                 navController.navigate(NavScreens.FoundPostCreation.route)
             }
             }
-            composable(NavScreens.Chat.route) { conversations(VM = VM) }
+//            composable(NavScreens.Chat.route) { conversations(VM = VM) }
             //composable(NavScreens.Chat.route){ Chat(VM = VM, conversation = VM.getConvo().orEmpty())}
+            composable(NavScreens.Email.route){
+                Email(VM = VM)
+            }
             composable(NavScreens.Profile.route) {
                 ProfileScreen(
                     userData = googleAuthUiClient.getSignedInUser(),
