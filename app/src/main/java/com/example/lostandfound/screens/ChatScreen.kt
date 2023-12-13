@@ -1,6 +1,8 @@
 package com.example.lostandfound.screens
 
 import android.annotation.SuppressLint
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -81,7 +83,7 @@ import com.google.accompanist.insets.ProvideWindowInsets
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Chat(VM : LafViewModel) {
+fun Chat(VM : LafViewModel,conversation: Map<String, Any>) {
     val message: String by VM.message.observeAsState(initial = "")
     val messages: List<Map<String, Any>> by VM.messages.observeAsState(
         initial = emptyList<Map<String, Any>>().toMutableList()
@@ -96,7 +98,7 @@ fun Chat(VM : LafViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "/* TODO */",//insert name of user chatting with
+                            text = conversation[Conversation.USER2].toString(),//insert name of user chatting with
                             color = md_theme_light_secondary,//custom theme
                             fontSize = 40.sp,
                             fontWeight = FontWeight.Bold,
@@ -126,7 +128,7 @@ fun Chat(VM : LafViewModel) {
                         //-horizontally
                     )
                     Spacer(modifier = Modifier.padding(10.dp))
-                    IconButton(onClick = { VM.addMessage() }) {
+                    IconButton(onClick = { VM.addMessage()}) {
                         Icon(
                             Icons.Filled.Send,
                             contentDescription = "send",
@@ -203,6 +205,7 @@ Clickable Cards
     conversations for that user
     if empty say "Claim or Found"
  */
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -211,6 +214,7 @@ fun conversations(VM: LafViewModel){
     val conversations: List<Map<String, Any>> by VM.messages.observeAsState(
             initial = emptyList<Map<String, Any>>().toMutableList()
             )
+
 
     Scaffold(//Top bar for style and bottom for messaging field
         topBar = {
@@ -264,6 +268,9 @@ fun conversations(VM: LafViewModel){
                     }
                 }
             }
+        }
+        if (conversation.isNotEmpty()){
+            Chat(VM = VM, conversation = conversation)
         }
     }
 }

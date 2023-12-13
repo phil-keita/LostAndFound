@@ -1,5 +1,7 @@
 package com.example.lostandfound.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,6 +73,7 @@ fun LostThread(VM : LafViewModel, navToCreate: () -> Unit){
 
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
     var username by remember { mutableStateOf<String?>(null) }
@@ -134,7 +137,7 @@ fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Button(onClick = {
-
+                    VM.createConversation()
                 }){
                     Text("Found it!")
                 }

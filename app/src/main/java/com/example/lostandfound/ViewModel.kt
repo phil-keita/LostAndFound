@@ -428,7 +428,7 @@ class LafViewModel: ViewModel(){
     @RequiresApi(Build.VERSION_CODES.O)
     fun createConversation(
     ){
-        val conversation: Map<String, Any> = _conversation.value ?: throw IllegalArgumentException("post empty")
+        val conversation: Map<String, Any> = _conversation.value ?: throw IllegalArgumentException("convo empty")
         if (conversation.isNotEmpty()) {
             Firebase.firestore.collection(Conversation.CONVERSATIONS).document().set(
                 hashMapOf(
@@ -457,24 +457,32 @@ class LafViewModel: ViewModel(){
                     Log.d("Init Debug", user_info.toString())
                     if(user_info != null){
                         Log.d("Init Debug","Current user info loaded")
-                        var convo_list = user_info[DataToDB.CONVERSATIONS] as List<DocumentReference>
-                        Log.d("Init Debug",convo_list.toString())
-                        for(convo in convo_list){
-                            convo
-                                .addSnapshotListener{ value , e ->
-                                    if (e != null) {
-                                        Log.w(FoundPost.TAG, "Listen failed.", e)
-                                        return@addSnapshotListener
+                        var convo_list = user_info[DataToDB.CONVERSATIONS]
+                        if(convo_list !=null){
+                            val convoListAsDocRefs = convo_list as List<DocumentReference>
+
+                            Log.d("Init Debug",convoListAsDocRefs.toString())
+                            for(convo in convoListAsDocRefs){
+                                convo
+                                    .addSnapshotListener{ value , e ->
+                                        if (e != null) {
+                                            Log.w(FoundPost.TAG, "Listen failed.", e)
+                                            return@addSnapshotListener
+                                        }
+                                        if (value != null){
+                                            Log.d("Init Debug","Conversation Loaded")
+                                            var data = value.data
+                                            Log.d("Init Debug",data.toString())
+                                            list.add(data!!)
+                                        }
                                     }
-                                    if (value != null){
-                                        Log.d("Init Debug","Conversation Loaded")
-                                        var data = value.data
-                                        Log.d("Init Debug",data.toString())
-                                        list.add(data!!)
-                                    }
-                                }
+                            }
+                            updateConversations(list)
+                        }else{
+                            Log.d("Init Debug", "convo_list is empty")
                         }
-                        updateConversations(list)
+
+
                     }else{
                         Log.d("Init Debug","Current user info is empty")
                     }
