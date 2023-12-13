@@ -180,6 +180,7 @@ fun LAFApp(modifier: Modifier = Modifier, context : Context , db : FirebaseFires
             }
             }
             composable(NavScreens.Chat.route) { conversations(VM = VM) }
+            //composable(NavScreens.Chat.route){ Chat(VM = VM, conversation = VM.getConvo().orEmpty())}
             composable(NavScreens.Profile.route) {
                 ProfileScreen(
                     userData = googleAuthUiClient.getSignedInUser(),

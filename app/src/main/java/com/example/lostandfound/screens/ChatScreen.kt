@@ -3,6 +3,7 @@ package com.example.lostandfound.screens
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -197,15 +198,13 @@ Clickable Cards
     conversations for that user
     if empty say "Claim or Found"
  */
+
+
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun conversations(VM: LafViewModel){
-//    val conversation: Map<String, Any> by VM.conversation.observeAsState(emptyMap())
-//    val conversations: List<Map<String, Any>> by VM.messages.observeAsState(
-//            initial = emptyList<Map<String, Any>>().toMutableList()
-//            )
     var notEmptyChat by remember {
         mutableStateOf(false)
     }
@@ -213,7 +212,7 @@ fun conversations(VM: LafViewModel){
     val conversations by VM.conversations.observeAsState(initial = mutableListOf())
     val conversation by VM.conversation.observeAsState(initial = emptyMap())
     var username by remember { mutableStateOf<String?>(null) }
-    Scaffold(//Top bar for style and bottom for messaging field
+    Scaffold(
         topBar = {
             TopAppBar(
                 title = {
@@ -223,7 +222,7 @@ fun conversations(VM: LafViewModel){
                     ) {
                         Text(
                             "Lost Locator Chat",
-                            color = md_theme_light_secondary,//custom theme
+                            color = md_theme_light_secondary,
                             fontSize = 40.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 2.sp
@@ -232,7 +231,7 @@ fun conversations(VM: LafViewModel){
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = md_theme_light_secondaryContainer)
             )
-        }) {  innerpadding ->
+        }) { innerpadding ->
         val listState = rememberLazyListState()
         LaunchedEffect(conversations.size) {
             listState.animateScrollToItem(index = 0)
@@ -256,13 +255,11 @@ fun conversations(VM: LafViewModel){
                     reverseLayout = false
                 ) {
                     items(conversations) { conversation ->
-
                         Card(onClick = {
-                            if (conversation.isNotEmpty()){
+                            if (conversation.isNotEmpty()) {
                                 notEmptyChat = true //chat(vm,conversation)
                             }
                         }) {
-                        Card {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -271,11 +268,16 @@ fun conversations(VM: LafViewModel){
                                 Text(
                                     text = conversation[Conversation.USER2] as String,
                                     modifier = Modifier.padding(8.dp)
-                                    )
+                                )
                             }
                         }
                     }
                 }
+            }
+        }
+        if (notEmptyChat){
+            AnimatedVisibility(visible = true) {
+                Chat(VM = VM, conversation = conversation)
             }
         }
     }
