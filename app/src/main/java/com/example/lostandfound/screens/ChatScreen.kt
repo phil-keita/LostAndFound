@@ -77,6 +77,7 @@ import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.ProvideWindowInsets
+import com.google.firebase.firestore.DocumentReference
 
 
 //Chat Screen
@@ -210,12 +211,14 @@ Clickable Cards
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun conversations(VM: LafViewModel){
-    val conversation: Map<String, Any> by VM.conversation.observeAsState(emptyMap())
-    val conversations: List<Map<String, Any>> by VM.messages.observeAsState(
-            initial = emptyList<Map<String, Any>>().toMutableList()
-            )
+//    val conversation: Map<String, Any> by VM.conversation.observeAsState(emptyMap())
+//    val conversations: List<Map<String, Any>> by VM.messages.observeAsState(
+//            initial = emptyList<Map<String, Any>>().toMutableList()
+//            )
 
-
+    val conversations by VM.conversations.observeAsState(initial = mutableListOf())
+    val conversation by VM.conversation.observeAsState(initial = emptyMap())
+    var username by remember { mutableStateOf<String?>(null) }
     Scaffold(//Top bar for style and bottom for messaging field
         topBar = {
             TopAppBar(
@@ -251,9 +254,15 @@ fun conversations(VM: LafViewModel){
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(weight = 0.85f, fill = true),
+                    contentPadding = PaddingValues(
+                        top = innerpadding.calculateTopPadding() + 8.dp,
+                        bottom = innerpadding.calculateBottomPadding() + 8.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                     reverseLayout = false
                 ) {
                     items(conversations) { conversation ->
+
                         Card {
                             Column(
                                 modifier = Modifier
@@ -261,7 +270,8 @@ fun conversations(VM: LafViewModel){
                                     .padding(16.dp)
                             ) {
                                 Text(
-                                    text = conversation[Conversation.USER2].toString()
+                                    text = VM.getUsername(conversation[Conversation.USER2] as DocumentReference),
+                                    modifier = Modifier.padding(8.dp)
                                     )
                             }
                         }
