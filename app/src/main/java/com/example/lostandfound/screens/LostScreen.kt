@@ -1,6 +1,7 @@
 package com.example.lostandfound.screens
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -79,6 +81,7 @@ fun LostThread(VM : LafViewModel, navToCreate: () -> Unit){
 fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
     var username by remember { mutableStateOf<String?>(null) }
     var email by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier.padding(20.dp)
@@ -148,6 +151,7 @@ fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
                     VM.nameOfPoster.value = username
                     VM.nameOfItem.value = post[LostPost.ITEM].toString()
                     VM.posterEmail.value = email
+                    Toast.makeText(context, "Click on the Email Tab to notify ${username.toString()}!", Toast.LENGTH_LONG).show()
                 }){
                     Text("Found it!")
                 }

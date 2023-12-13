@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -93,6 +95,9 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
 
     val currentTimeMillis = remember { mutableStateOf(System.currentTimeMillis()) }
     var username by remember { mutableStateOf<String?>(null) }
+    var email by remember { mutableStateOf<String?>(null) }
+
+    val context = LocalContext.current
     LaunchedEffect(key1 = currentTimeMillis) {
         while (true) {
             delay(1000)  // Update every second
@@ -102,6 +107,10 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
     //get username of the poster
     LaunchedEffect(key1 = post[LostPost.POST_BY]) {
         username = VM.getUsernameByUid(post[LostPost.POST_BY].toString())
+    }
+
+    LaunchedEffect(key1 = post[LostPost.POST_BY]) {
+        email = VM.getEmailByUid(post[LostPost.POST_BY].toString())
     }
     //pull time of post and reflect and format
     val postTimeMillis = post[FoundPost.SENT_ON].toString().toLong()
@@ -163,7 +172,7 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
                         Text(text = "$timeIndicator",
                             color = Color.Gray,
                             fontSize = 15.sp)
-                        Text(text = "Jon doe",
+                        Text(text = username.toString(),
                             color = Color.Gray)
                     }
                     Text(text = "${post[FoundPost.ADDITIONAL_INFO]}",
@@ -177,8 +186,15 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
                 }
             },
             confirmButton = {
-                TextButton(onClick = {}) {
-                    Text(text = "Text Jon")
+                TextButton(onClick = {
+                    VM.userFoundItem()
+                    VM.nameOfPoster.value = username
+                    VM.nameOfItem.value = post[FoundPost.ITEM].toString()
+                    VM.posterEmail.value = email
+                    showPostDetails = false
+                    Toast.makeText(context, "Click on the Email Tab to claim your ${post[FoundPost.ITEM].toString()}!", Toast.LENGTH_LONG).show()
+                }) {
+                    Text(text = "Text ${username.toString()}")
                 }
             })
     }
