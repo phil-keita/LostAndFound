@@ -14,12 +14,17 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,7 +39,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.lostandfound.LafViewModel
 import com.example.lostandfound.R
+import com.example.lostandfound.model.Location
 import com.example.lostandfound.model.LostPost
+import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.GeoPoint
 import java.sql.Time
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -43,6 +51,9 @@ import java.sql.Time
 fun lostPostCreationForm(
     VM: LafViewModel,
     cancelCreation: () -> Unit) {
+
+    //List of all predefined locations
+    val locations: List<Map<String, Any>> by VM.locations.observeAsState(initial = emptyList())
 
     // Form values
     var item by remember {
@@ -59,6 +70,15 @@ fun lostPostCreationForm(
     }
     var unknown by remember {
         mutableStateOf(false)
+    }
+    var expanded by remember{
+        mutableStateOf(false)
+    }
+    var isOther by remember{
+        mutableStateOf(false)
+    }
+    var otherLocation by remember {
+        mutableStateOf("")
     }
 
     // UI constants
@@ -102,19 +122,69 @@ fun lostPostCreationForm(
             modifier = Modifier.width(textFieldSize)
         )
         // Location TextField
-        OutlinedTextField(value = if (unknown) "Unknown" else location,
+        // Location Dropdown <--
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = {expanded  = it }
+        ){
+            OutlinedTextField(
+                value = location,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(text = "Location") },
+                leadingIcon = { Icon(painterResource(id = R.drawable.baseline_location_on_24),contentDescription = null) },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                modifier = Modifier
+                    .menuAnchor()
+                    .width(textFieldSize))
+            // The dropdown itself
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }) {
+                for (loc in locations) {
+                    DropdownMenuItem(
+                        text = { Text("${loc[Location.LOCATION_NAME]}") },
+                        onClick ={
+                            location = loc[Location.LOCATION_NAME] as String
+                            isOther = false
+                            expanded = false
+                        })
+                    Divider()
+                }
+                DropdownMenuItem(
+                    text = { Text("Other") },
+                    onClick ={
+                        location = "Other"
+                        expanded = false
+                        isOther = true
+                    })
+            }
+        }
+        // Other location TextField
+        OutlinedTextField(value = otherLocation,
             singleLine = true,
+            enabled = isOther,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Next,
+                imeAction = ImeAction.Done,
                 capitalization = KeyboardCapitalization.Sentences),
-            label = { Text(text = "Location") },
-            placeholder = { Text(text = "Flask",color = Color.Gray) },
-            onValueChange = {location = it},
-            leadingIcon = { Icon(painterResource(id = R.drawable.baseline_location_on_24), contentDescription = null) },
-            modifier = Modifier.width(textFieldSize),
-            enabled = !unknown
+            label = { Text("Other Location") },
+            placeholder = { Text(text="Hopeman Lawn",color = Color.Gray) },
+            onValueChange = {otherLocation = it},
+            modifier = Modifier.width(textFieldSize)
         )
+
+        // Location unknown checkbox
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically){
+            Checkbox(checked = unknown, onCheckedChange = {unknown = it})
+            Text("Unknown")
+        }
 
         // Timeframe TextField
         OutlinedTextField(value = timeframe,
@@ -129,16 +199,6 @@ fun lostPostCreationForm(
             leadingIcon = { Icon(painterResource(id = R.drawable.schedule), contentDescription = null) },
             modifier = Modifier.width(textFieldSize)
         )
-
-        // Location unknown checkbox
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically){
-            Checkbox(checked = unknown, onCheckedChange = {unknown = it})
-            Text("Unknown")
-        }
-
 
         // Submit and Cancel buttons
         Row(modifier = Modifier.padding(16.dp),

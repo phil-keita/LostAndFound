@@ -59,7 +59,7 @@ import kotlinx.coroutines.delay
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
-fun FoundThread(VM : LafViewModel, navToCreate: () -> Unit){
+fun FoundThread(VM : LafViewModel, navToCreate: () -> Unit, navToMain: () -> Unit){
     val foundposts: List<Map<String, Any>> by VM.foundposts.observeAsState(initial = emptyList())
 
         // Found Posts Cards
@@ -68,7 +68,7 @@ fun FoundThread(VM : LafViewModel, navToCreate: () -> Unit){
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally){
                 items(foundposts){ post ->
-                    showFoundPost(VM = VM, post = post)
+                    showFoundPost(VM = VM, post = post, navToMain)
                 }
             }
             // Opens post creation screen
@@ -88,9 +88,9 @@ fun FoundThread(VM : LafViewModel, navToCreate: () -> Unit){
 }
 
 @Composable
-fun FoundPostDetails(post: Map<String, Any>){
+fun FoundPostDetails(post: Map<String, Any>, navToMain: () -> Unit){
     AlertDialog(
-        onDismissRequest = { /*TODO*/ },
+        onDismissRequest = { navToMain },
         title = {
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center){
@@ -146,7 +146,7 @@ fun FoundPostDetails(post: Map<String, Any>){
             }
         },
         dismissButton = {
-            TextButton(onClick = {}) {
+            TextButton(onClick = {navToMain}) {
                 Text(text = "Cancel")
             }
         },
@@ -158,16 +158,20 @@ fun FoundPostDetails(post: Map<String, Any>){
 }
 
 @Composable
-fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
+fun showFoundPost(VM : LafViewModel, post: Map<String, Any>, navToMain: () -> Unit){
     var showPostDetails by remember{mutableStateOf(false)}
 
     val currentTimeMillis = remember { mutableStateOf(System.currentTimeMillis()) }
-
+    var username by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(key1 = currentTimeMillis) {
         while (true) {
             delay(1000)  // Update every second
             currentTimeMillis.value = System.currentTimeMillis()
         }
+    }
+    //get username of the poster
+    LaunchedEffect(key1 = post[LostPost.POST_BY]) {
+        username = VM.getUsernameByUid(post[LostPost.POST_BY].toString())
     }
     //pull time of post and reflect and format
     val postTimeMillis = post[FoundPost.SENT_ON].toString().toLong()
@@ -181,7 +185,7 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
     }
 
     if(showPostDetails){
-        FoundPostDetails(post)
+        FoundPostDetails(post, navToMain)
     }
     Card(
         modifier = Modifier.padding(20.dp)
@@ -204,50 +208,50 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
                         .fillMaxWidth()
                         .height(200.dp),
                     contentScale = ContentScale.Crop)
-                // Timestamp and username
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically){
-                    Text(text = "timeIndicator",
-                        color = Color.Gray,
-                        fontSize = 15.sp,
-                        modifier = Modifier
-                            .background(color = Color.White.copy(alpha = 0.5f),)
-                            .shadow(4.dp))
-                    Text(text = "Jon doe",
-                        color = Color.Gray,
-                        fontSize = 15.sp,
-                        modifier = Modifier
-                            .background(color = Color.White.copy(alpha = 0.5f))
-                            .shadow(4.dp))
-                }
+
+            }
+            // Poster name and time
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically){
+                Text(text = timeIndicator,
+                    color = Color.Gray,
+                    fontSize = 15.sp,
+                    modifier = Modifier
+                )
+                Text(text = username?:"loading",
+                    color = Color.Gray,
+                    fontSize = 15.sp,
+                    modifier = Modifier
+                )
             }
             // Item name
             Row(modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically){
                 Text(text= "${post[FoundPost.ITEM]}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
-                // Location
-                Row(modifier = Modifier
-                    .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Icon(painterResource(id = R.drawable.baseline_location_on_24), contentDescription = null)
-                    Text("${post[FoundPost.LOCATION_NAME]}")
-                }
+
             }
             // Additional information
-            Text(text = "The Earbuds were by the last booth on the right side of the main floor.",
+            Text(text = post[FoundPost.ADDITIONAL_INFO] as String,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp))
+            // Location
+            Row(modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Icon(painterResource(id = R.drawable.baseline_location_on_24), contentDescription = null)
+                Text("${post[FoundPost.LOCATION_NAME]}")
+            }
             // Claim button
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
@@ -259,7 +263,6 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
                 }
 
             }
-
         }
     }
 }
