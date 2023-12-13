@@ -497,7 +497,7 @@ class LafViewModel: ViewModel(){
         Log.d("Init Debug", "conversation init: "+_conversations.value.toString())
     }
 
-    private fun getUsername(docRef: DocumentReference): String{
+    fun getUsername(docRef: DocumentReference): String{
         var username = "User does not exist"
         docRef
             .addSnapshotListener{ value, e ->
