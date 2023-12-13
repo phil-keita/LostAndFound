@@ -187,7 +187,7 @@ fun showFoundPost(VM : LafViewModel, post: Map<String, Any>){
             },
             confirmButton = {
                 TextButton(onClick = {
-                    VM.userFoundItem()
+                    VM.userClaimedItem()
                     VM.nameOfPoster.value = username
                     VM.nameOfItem.value = post[FoundPost.ITEM].toString()
                     VM.posterEmail.value = email

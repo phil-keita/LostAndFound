@@ -1,6 +1,7 @@
 package com.example.lostandfound.screens
 
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,12 +28,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.lostandfound.LafViewModel
+import com.example.lostandfound.model.FoundPost
 import com.example.lostandfound.ui.theme.md_theme_dark_secondary
 import com.example.lostandfound.ui.theme.md_theme_light_onPrimary
 import com.example.lostandfound.ui.theme.md_theme_light_onSecondary
 import com.example.lostandfound.ui.theme.md_theme_light_primary
 import com.example.lostandfound.ui.theme.md_theme_light_secondary
 import com.example.lostandfound.ui.theme.md_theme_light_tertiaryContainer
+import okhttp3.internal.wait
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,16 +88,22 @@ fun Email(VM : LafViewModel) {
 
                 Button(
                     onClick = {
-                        val i = Intent(Intent.ACTION_SEND)
+                        val intentEmail = Intent(Intent.ACTION_SEND)
 
                         val emailAddress = arrayOf(VM.posterEmail.value)
-                        i.putExtra(Intent.EXTRA_EMAIL,emailAddress)
-                        i.putExtra(Intent.EXTRA_SUBJECT,emailSubject)
-                        i.putExtra(Intent.EXTRA_TEXT,emailBody)
+                        intentEmail.putExtra(Intent.EXTRA_EMAIL,emailAddress)
+                        intentEmail.putExtra(Intent.EXTRA_SUBJECT,emailSubject)
+                        intentEmail.putExtra(Intent.EXTRA_TEXT,emailBody)
 
-                        i.setType("message/rfc822")
+                        intentEmail.setType("message/rfc822")
 
-                        context.startActivity(Intent.createChooser(i,"Choose an Email client : "))
+                        context.startActivity(Intent.createChooser(intentEmail,"Choose an Email client : "))
+
+                        VM.nameOfPoster.value = ""
+                        VM.nameOfItem.value = ""
+                        VM.posterEmail.value = ""
+                        VM.claimItem.value = false
+                        Toast.makeText(context, "Email Sent!", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
@@ -160,6 +169,12 @@ fun Email(VM : LafViewModel) {
                         intentEmail.setType("message/rfc822")
 
                         context.startActivity(Intent.createChooser(intentEmail,"Choose an Email client : "))
+
+                        VM.nameOfPoster.value = ""
+                        VM.nameOfItem.value = ""
+                        VM.posterEmail.value = ""
+                        VM.foundItem.value = false
+                        Toast.makeText(context, "Email Sent!", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
