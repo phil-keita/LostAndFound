@@ -269,7 +269,7 @@ fun conversations(VM: LafViewModel){
                                     .padding(16.dp)
                             ) {
                                 Text(
-                                    text = VM.getUsername(conversation[Conversation.USER2] as DocumentReference),
+                                    text = conversation[Conversation.USER2] as String,
                                     modifier = Modifier.padding(8.dp)
                                     )
                             }
