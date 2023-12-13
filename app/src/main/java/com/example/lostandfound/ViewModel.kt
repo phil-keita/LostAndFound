@@ -30,6 +30,7 @@ import java.sql.Time
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
@@ -38,6 +39,10 @@ import com.google.firebase.firestore.local.ReferenceSet
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.storage
 import io.grpc.Context.Storage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -48,6 +53,14 @@ import java.util.concurrent.CountDownLatch
 
 
 class LafViewModel: ViewModel(){
+
+    // Conversation
+    private val _conversation = MutableLiveData<Map<String, Any>>()
+    val conversation: LiveData<Map<String, Any>> = _conversation
+    // Conversations
+    private val _conversations = MutableLiveData(emptyList<Map<String, Any>>().toMutableList())
+    val conversations: LiveData<MutableList<Map<String, Any>>> = _conversations
+
     private val _state = MutableStateFlow(SignInState())
     val state = _state.asStateFlow()
 
@@ -257,17 +270,26 @@ class LafViewModel: ViewModel(){
     }
 
     //sends message to firebase
+    @RequiresApi(Build.VERSION_CODES.O)
     fun addMessage() {
+        val conversation: MutableMap<String, Any> = (_conversation.value ?: throw IllegalArgumentException("convo empty")).toMutableMap()
         val message: String = _message.value ?: throw IllegalArgumentException("message empty")
         if (message.isNotEmpty()) {
-            Firebase.firestore.collection(LAFMessage.MESSAGES).document().set(
+            var docRef = Firebase.firestore.collection(LAFMessage.MESSAGES).document()
+            docRef.set(
                 hashMapOf(
                     LAFMessage.MESSAGE to message,
                     LAFMessage.SENT_BY to Firebase.auth.currentUser?.uid,
                     LAFMessage.SENT_ON to System.currentTimeMillis()
                 )
-            ).addOnSuccessListener {
-                _message.value = ""
+            )
+                .addOnSuccessListener {
+                    var messages = conversation[Conversation.MESSAGES] as MutableList<DocumentReference>
+                    messages.add(docRef)
+                    conversation[Conversation.MESSAGES] = messages
+                    updateConversation(conversation)
+                    createConversation()
+                    _message.value = ""
             }
         }
     }
@@ -288,6 +310,7 @@ class LafViewModel: ViewModel(){
                         }
                         if (value != null){
                             Log.d("MessageGET", "Message document retrieved")
+                            Log.d("MessageGET", "value: $value")
                             var message: Map<String, Any>? = value.data
                             if (message != null){
                                 Log.d("MessageGET", "Message document not null. Adding to list")
@@ -394,16 +417,8 @@ class LafViewModel: ViewModel(){
 
     // Conversation handler
 
-    // Conversation
-    private val _conversation = MutableLiveData<Map<String, Any>>()
-    val conversation: LiveData<Map<String, Any>> = _conversation
-    // Conversations
-    private val _conversations = MutableLiveData(emptyList<Map<String, Any>>().toMutableList())
-    val conversations: LiveData<MutableList<Map<String, Any>>> = _conversations
-
     init {
         getConversations()
-
     }
 
     /**
@@ -422,13 +437,22 @@ class LafViewModel: ViewModel(){
     ){
         val conversation: Map<String, Any> = _conversation.value ?: throw IllegalArgumentException("convo empty")
         if (conversation.isNotEmpty()) {
-            Firebase.firestore.collection(Conversation.CONVERSATIONS).document().set(
+            var docRef = Firebase.firestore.collection(Conversation.CONVERSATIONS).document().set(
                 hashMapOf(
                     Conversation.MESSAGES to conversation[Conversation.MESSAGES],
                     Conversation.USER1 to Firebase.auth.currentUser?.uid,
                     Conversation.USER2 to conversation[Conversation.USER2]
                 )
-            ).addOnSuccessListener {
+            )
+            docRef.addOnSuccessListener {
+                var user2Ref = conversation[Conversation.USER2] as DocumentReference
+                user2Ref.update(
+                    DataToDB.CONVERSATIONS, FieldValue.arrayUnion(docRef)
+                )
+                var user1Ref = conversation[Conversation.USER1] as DocumentReference
+                user1Ref.update(
+                    DataToDB.CONVERSATIONS, FieldValue.arrayUnion(docRef)
+                )
                 _conversation.value = emptyMap()
             }
         }
@@ -436,57 +460,100 @@ class LafViewModel: ViewModel(){
 
     //gets the posts from firebase
     private fun getConversations() {
-        Firebase.firestore.collection(DataToDB.USERS)
-            .document(Firebase.auth.currentUser?.uid.toString())
-            .addSnapshotListener { value, e ->
-                if (e != null) {
-                    Log.w(Conversation.TAG, "Listen failed.", e)
-                    return@addSnapshotListener
-                }
-                if (value != null) {
-                    var list = mutableListOf<Map<String, Any>>()
-                    var user_info: Map<String, Any>? = value.data
-                    Log.d("Init Debug", user_info.toString())
-                    if(user_info != null){
-                        Log.d("Init Debug","Current user info loaded")
-                        var convo_list = user_info[DataToDB.CONVERSATIONS]
-                        if(convo_list !=null){
-                            val convoListAsDocRefs = convo_list as List<DocumentReference>
-                            Log.d("Init Debug",convoListAsDocRefs.toString())
-                            for(convo in convoListAsDocRefs){
-                                convo
-                                    .addSnapshotListener{ value , e ->
-                                        if (e != null) {
-                                            Log.w(FoundPost.TAG, "Listen failed.", e)
-                                            return@addSnapshotListener
-                                        }
-                                        if (value != null){
-                                            Log.d("Init Debug","Conversation Loaded")
-                                            var data = value.data
-                                            Log.d("Init Debug",data.toString())
-                                            list.add(data!!)
-                                            Log.d("Init Debug","list: "+list.toString())
-                                            updateConversations(list)
-                                        }
+        runBlocking {
+            launch(Dispatchers.IO){
+                Firebase.firestore.collection(DataToDB.USERS)
+                    .document(Firebase.auth.currentUser?.uid.toString())
+                    .addSnapshotListener { value, e ->
+                        if (e != null) {
+                            Log.w(Conversation.TAG, "Listen failed.", e)
+                            return@addSnapshotListener
+                        }
+                        if (value != null) {
+                            var list = mutableListOf<Map<String, Any>>()
+                            var user_info: Map<String, Any>? = value.data
+                            Log.d("Init Debug", user_info.toString())
+                            Log.d("Init Debug", "value: " +value.toString())
+                            if(user_info != null){
+                                Log.d("Init Debug","Current user info loaded")
+                                var convo_list = user_info[DataToDB.CONVERSATIONS]
+                                if(convo_list !=null){
+                                    val convoListAsDocRefs = convo_list as List<DocumentReference>
+                                    Log.d("Init Debug",convoListAsDocRefs.toString())
+                                    for(convo in convoListAsDocRefs){
+                                        convo
+                                            .addSnapshotListener{ value , e ->
+                                                if (e != null) {
+                                                    Log.w(FoundPost.TAG, "Listen failed.", e)
+                                                    return@addSnapshotListener
+                                                }
+                                                if (value != null){
+                                                    Log.d("Init Debug","Conversation Loaded")
+                                                    var data = value.data
+                                                    Log.d("Init Debug",data.toString())
+                                                    list.add(data!!)
+                                                    Log.d("Init Debug","list: "+list.toString())
+                                                    updateConversations(list)
+                                                }
+                                            }
+
                                     }
 
+                                }else{
+                                    Log.d("Init Debug", "convo_list is empty")
+                                }
+                            }else{
+                                Log.d("Init Debug","Current user info is empty")
                             }
-
                         }else{
-                            Log.d("Init Debug", "convo_list is empty")
+                            Log.d("Init Debug","value is  empty")
                         }
-                    }else{
-                        Log.d("Init Debug","Current user info is empty")
                     }
-                }else{
-                    Log.d("Init Debug","value is  empty")
-                }
             }
+        }
+
     }
 
     private fun updateConversations(list: MutableList<Map<String, Any>>) {
         _conversations.value = list.asReversed()
         Log.d("Init Debug", "conversation updated init: "+_conversations.value.toString() + list.asReversed().toString())
         getMessages(0)
+    }
+
+
+    private val _username = MutableStateFlow("User does not exist")
+    val username: StateFlow<String> = _username
+    fun getUsername(docRef: DocumentReference): String{
+
+
+//        runBlocking {
+//            launch(Dispatchers.IO){
+//                        val latch = CountDownLatch(1)
+                docRef
+                    .addSnapshotListener{value, e ->
+                        if (e != null) {
+                            Log.w(Conversation.TAG, "Listen failed.", e)
+                            return@addSnapshotListener
+                        }
+                        if (value != null) {
+                            var userInfo: Map<String, Any>? = value.data
+                            Log.d("GETUsername", "UserInfo retrieved value: ${value.toString()}")
+                            Log.d("GETUsername", "UserInfo retrieved: $userInfo")
+                            if(userInfo != null){
+                                _username.value = userInfo[DataToDB.USERNAME] as String
+                                Log.d("GETUsername", "Username actually retrieved: $username")
+//                        latch.countDown()
+                            }else{
+                                Log.d("GETUsername", "Username is null:  $username")
+                            }
+                        }else{
+                            Log.d("GETUsername", "user info is null:  $username")
+                        }
+                    }
+//        latch.await()
+                Log.d("GETUsername", "Username retrieved: $username")
+//            }
+//        }
+        return _username.toString()
     }
 }

@@ -38,12 +38,15 @@ import androidx.compose.ui.unit.sp
 import com.example.lostandfound.LafViewModel
 import com.example.lostandfound.R
 import com.example.lostandfound.data.DummyPosts
+import com.example.lostandfound.model.Conversation
 import com.example.lostandfound.model.LostPost
 import com.google.common.primitives.UnsignedBytes.toInt
 import com.google.common.primitives.UnsignedInts.toLong
+import com.google.firebase.firestore.DocumentReference
 import kotlinx.coroutines.delay
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LostThread(VM : LafViewModel, navToCreate: () -> Unit){
     val lostpost: Map<String, Any> by VM.lostpost.observeAsState(initial = emptyMap())
@@ -137,6 +140,12 @@ fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Button(onClick = {
+                    VM.updateConversation(
+                        hashMapOf(
+                            Conversation.USER2 to post[LostPost.POST_BY]!!,
+                            Conversation.MESSAGES to emptyList<DocumentReference>()
+                        )
+                    )
                     VM.createConversation()
                 }){
                     Text("Found it!")

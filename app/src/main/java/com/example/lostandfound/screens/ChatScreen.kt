@@ -2,6 +2,7 @@ package com.example.lostandfound.screens
 
 import android.annotation.SuppressLint
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -60,6 +61,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.LiveData
 
 import com.example.lostandfound.model.LostPost
@@ -211,7 +213,7 @@ fun conversations(VM: LafViewModel){
 
     val conversations by VM.conversations.observeAsState(initial = mutableListOf())
     val conversation by VM.conversation.observeAsState(initial = emptyMap())
-    var username by remember { mutableStateOf<String?>(null) }
+    val username by VM.username.collectAsState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -265,8 +267,10 @@ fun conversations(VM: LafViewModel){
                                     .fillMaxWidth()
                                     .padding(16.dp)
                             ) {
+                                Log.d("TylerTAG", "conversation: ${conversation[Conversation.USER2]}")
+                                Log.d("TylerTAG2", "conversation: ${VM.getUsername(conversation[Conversation.USER2] as DocumentReference)}")
                                 Text(
-                                    text = conversation[Conversation.USER2] as String,
+                                    text = VM.getUsername(conversation[Conversation.USER2] as DocumentReference),
                                     modifier = Modifier.padding(8.dp)
                                 )
                             }
