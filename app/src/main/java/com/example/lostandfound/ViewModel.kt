@@ -496,4 +496,23 @@ class LafViewModel: ViewModel(){
         _conversations.value = list.asReversed()
         Log.d("Init Debug", "conversation init: "+_conversations.value.toString())
     }
+
+    private fun getUsername(docRef: DocumentReference): String{
+        var username = "User does not exist"
+        docRef
+            .addSnapshotListener{ value, e ->
+                if (e != null) {
+                    Log.w(Conversation.TAG, "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+                if (value != null) {
+                    var user: Map<String, Any>? = value.data
+                    if(user != null){
+                        username = user[DataToDB.USERNAME] as String
+                    }
+                }
+
+            }
+        return username
+    }
 }
