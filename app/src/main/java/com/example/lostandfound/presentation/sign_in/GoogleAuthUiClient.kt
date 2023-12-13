@@ -26,7 +26,7 @@ class GoogleAuthUiClient(
     //private auth
     private val auth = Firebase.auth
 
-    suspend fun  signIn(): IntentSender?{
+    suspend fun signIn(): IntentSender?{
         val result = try{
             oneTapClient.beginSignIn(
                 buildSignInRequest()
@@ -58,7 +58,8 @@ class GoogleAuthUiClient(
                     UserData(
                         userId = uid,
                         username = displayName,
-                        profilePicture = photoUrl?.toString()
+                        profilePicture = photoUrl?.toString(),
+                        email = email
                     )
                 },
                 errorMessage = null
@@ -91,7 +92,8 @@ class GoogleAuthUiClient(
         UserData(
             userId = uid,
             username = displayName,
-            profilePicture = photoUrl?.toString()
+            profilePicture = photoUrl?.toString(),
+            email = email?.toString()
         )
     }
     private fun buildSignInRequest(): BeginSignInRequest{
@@ -115,6 +117,7 @@ class GoogleAuthUiClient(
             val userData = hashMapOf(
                 DataToDB.UID to Firebase.auth.currentUser?.uid,
                 DataToDB.USERNAME to Firebase.auth.currentUser?.displayName,
+                DataToDB.EMAIL to Firebase.auth.currentUser?.email
             )
 
             try {

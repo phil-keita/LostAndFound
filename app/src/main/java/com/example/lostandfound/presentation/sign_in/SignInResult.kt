@@ -8,7 +8,8 @@ data class SignInResult(
 data class UserData(
     val userId: String,
     val username: String?,
-    val profilePicture: String?
+    val profilePicture: String?,
+    val email: String?
 )
 
 //Object for our firestore db, dealing with user data.
@@ -21,6 +22,7 @@ object DataToDB{
     const val TAG = "LAF"
     const val UID = "uid"
     const val USERNAME = "username"
+    const val EMAIL = "email"
     const val CONVERSATIONS = "conversation_list"
     const val IS_CURRENT_USER = "is_current_user"
 }

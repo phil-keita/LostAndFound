@@ -78,6 +78,8 @@ fun LostThread(VM : LafViewModel, navToCreate: () -> Unit){
 @Composable
 fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
     var username by remember { mutableStateOf<String?>(null) }
+    var email by remember { mutableStateOf<String?>(null) }
+
     Card(
         modifier = Modifier.padding(20.dp)
     ){
@@ -111,6 +113,10 @@ fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
                 LaunchedEffect(key1 = post[LostPost.POST_BY]) {
                     username = VM.getUsernameByUid(post[LostPost.POST_BY].toString())
                 }
+                LaunchedEffect(key1 = post[LostPost.POST_BY]) {
+                    email = VM.getEmailByUid(post[LostPost.POST_BY].toString())
+                }
+
 
                 Text(text = timeIndicator,
                     color = Color.Gray,
@@ -138,7 +144,10 @@ fun showLostPost(VM : LafViewModel,post: Map<String, Any>){
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Button(onClick = {
-                    //VM.createConversation()
+                    VM.userFoundItem()
+                    VM.nameOfPoster.value = username
+                    VM.nameOfItem.value = post[LostPost.ITEM].toString()
+                    VM.posterEmail.value = email
                 }){
                     Text("Found it!")
                 }

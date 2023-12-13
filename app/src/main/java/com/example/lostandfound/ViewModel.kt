@@ -237,81 +237,6 @@ class LafViewModel: ViewModel(){
         _foundposts.value = list.asReversed()
     }
 
-
-    // MESSAGE HANDLERS
-
-    init {
-//        getMessages()
-//        getConversations()
-    }
-
-//    private val _message = MutableLiveData("")
-//    val message: LiveData<String> = _message
-//
-//    private var _messages = MutableLiveData(emptyList<Map<String, Any>>().toMutableList())
-//    val messages: LiveData<MutableList<Map<String, Any>>> = _messages
-//
-//    //updates the message during input
-//    fun updateMessage(message: String) {
-//        _message.value = message
-//    }
-//
-//    //sends message to firebase
-//    fun addMessage() {
-//        val message: String = _message.value ?: throw IllegalArgumentException("message empty")
-//        if (message.isNotEmpty()) {
-//            Firebase.firestore.collection(LAFMessage.MESSAGES).document().set(
-//                hashMapOf(
-//                    LAFMessage.MESSAGE to message,
-//                    LAFMessage.SENT_BY to Firebase.auth.currentUser?.uid,
-//                    LAFMessage.SENT_ON to System.currentTimeMillis()
-//                )
-//            ).addOnSuccessListener {
-//                _message.value = ""
-//            }
-//        }
-//    }
-//
-//    //gets the message from firebase
-//    private fun getMessages(convoIndex: Int) {
-//        var convo: Map<String, Any>? = _conversations.value?.get(convoIndex)
-//        if (convo != null){
-//            Log.d("MessageGET", "Convo with index $convoIndex is not null")
-//            val docRef: List<DocumentReference> = convo[Conversation.MESSAGES] as List<DocumentReference>
-//            val list = emptyList<Map<String, Any>>().toMutableList()
-//            for(ref in docRef){
-//                ref
-//                    .addSnapshotListener{ value, e ->
-//                        if (e != null) {
-//                            Log.w(LAFMessage.TAG, "Listen failed.", e)
-//                            return@addSnapshotListener
-//                        }
-//                        if (value != null){
-//                            Log.d("MessageGET", "Message document retrieved")
-//                            var message: Map<String, Any>? = value.data
-//                            if (message != null){
-//                                Log.d("MessageGET", "Message document not null. Adding to list")
-//                                list.add(message)
-//                                updateMessages(list)
-//                            }else{
-//                                Log.d("MessageGET", "Message was null :(")
-//                            }
-//                        }
-//                    }
-//            }
-//
-//        }else{
-//            Log.d("MessageGET", "Convo with index $convoIndex is null")
-//        }
-////
-//    }
-//    //Update the list after getting the details from firestore
-//    private fun updateMessages(list: MutableList<Map<String, Any>>) {
-//        _messages.value = list.asReversed()
-//        Log.d("MessageGET", "messages updated: "+_messages.value.toString())
-//    }
-
-
     //Lost Page
 
     private val _lostpost = MutableLiveData<Map<String, Any>>()
@@ -391,6 +316,118 @@ class LafViewModel: ViewModel(){
 
         return username
     }
+
+    suspend fun getEmailByUid(uid: String): String? {
+        val db = FirebaseFirestore.getInstance()
+        var email: String? = null
+
+        try {
+            val docSnapshot = db.collection(DataToDB.USERS).document(uid).get().await()
+            if (docSnapshot.exists()) {
+                email = docSnapshot.getString(DataToDB.EMAIL)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            if (e is CancellationException) {
+                throw e
+            }
+        }
+
+        return email
+    }
+    val foundItem = MutableLiveData(false)
+
+    fun userFoundItem() {
+        foundItem.value = true
+    }
+
+    val claimItem = MutableLiveData(false)
+    fun userClaimedItem(){
+        claimItem.value = true
+    }
+
+    val nameOfPoster = MutableLiveData("")
+    val nameOfItem = MutableLiveData("")
+    val posterEmail = MutableLiveData("")
+
+
+}
+
+
+//Code we had to scrap with our messaging
+// MESSAGE HANDLERS
+
+//init {
+////        getMessages()
+////        getConversations()
+//}
+
+//    private val _message = MutableLiveData("")
+//    val message: LiveData<String> = _message
+//
+//    private var _messages = MutableLiveData(emptyList<Map<String, Any>>().toMutableList())
+//    val messages: LiveData<MutableList<Map<String, Any>>> = _messages
+//
+//    //updates the message during input
+//    fun updateMessage(message: String) {
+//        _message.value = message
+//    }
+//
+//    //sends message to firebase
+//    fun addMessage() {
+//        val message: String = _message.value ?: throw IllegalArgumentException("message empty")
+//        if (message.isNotEmpty()) {
+//            Firebase.firestore.collection(LAFMessage.MESSAGES).document().set(
+//                hashMapOf(
+//                    LAFMessage.MESSAGE to message,
+//                    LAFMessage.SENT_BY to Firebase.auth.currentUser?.uid,
+//                    LAFMessage.SENT_ON to System.currentTimeMillis()
+//                )
+//            ).addOnSuccessListener {
+//                _message.value = ""
+//            }
+//        }
+//    }
+//
+//    //gets the message from firebase
+//    private fun getMessages(convoIndex: Int) {
+//        var convo: Map<String, Any>? = _conversations.value?.get(convoIndex)
+//        if (convo != null){
+//            Log.d("MessageGET", "Convo with index $convoIndex is not null")
+//            val docRef: List<DocumentReference> = convo[Conversation.MESSAGES] as List<DocumentReference>
+//            val list = emptyList<Map<String, Any>>().toMutableList()
+//            for(ref in docRef){
+//                ref
+//                    .addSnapshotListener{ value, e ->
+//                        if (e != null) {
+//                            Log.w(LAFMessage.TAG, "Listen failed.", e)
+//                            return@addSnapshotListener
+//                        }
+//                        if (value != null){
+//                            Log.d("MessageGET", "Message document retrieved")
+//                            var message: Map<String, Any>? = value.data
+//                            if (message != null){
+//                                Log.d("MessageGET", "Message document not null. Adding to list")
+//                                list.add(message)
+//                                updateMessages(list)
+//                            }else{
+//                                Log.d("MessageGET", "Message was null :(")
+//                            }
+//                        }
+//                    }
+//            }
+//
+//        }else{
+//            Log.d("MessageGET", "Convo with index $convoIndex is null")
+//        }
+////
+//    }
+//    //Update the list after getting the details from firestore
+//    private fun updateMessages(list: MutableList<Map<String, Any>>) {
+//        _messages.value = list.asReversed()
+//        Log.d("MessageGET", "messages updated: "+_messages.value.toString())
+//    }
+
 
 //    // Conversation handler
 //
@@ -489,4 +526,3 @@ class LafViewModel: ViewModel(){
 //        Log.d("Init Debug", "conversation updated init: "+_conversations.value.toString() + list.asReversed().toString())
 //        getMessages(0)
 //    }
-}
