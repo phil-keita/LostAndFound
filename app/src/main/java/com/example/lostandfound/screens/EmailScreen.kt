@@ -150,16 +150,16 @@ fun Email(VM : LafViewModel) {
 
                 Button(
                     onClick = {
-                        val i = Intent(Intent.ACTION_SEND)
+                        val intentEmail = Intent(Intent.ACTION_SEND)
 
                         val emailAddress = arrayOf(VM.posterEmail.value)
-                        i.putExtra(Intent.EXTRA_EMAIL,emailAddress)
-                        i.putExtra(Intent.EXTRA_SUBJECT,emailSubject)
-                        i.putExtra(Intent.EXTRA_TEXT,emailBody)
+                        intentEmail.putExtra(Intent.EXTRA_EMAIL,emailAddress)
+                        intentEmail.putExtra(Intent.EXTRA_SUBJECT,emailSubject)
+                        intentEmail.putExtra(Intent.EXTRA_TEXT,emailBody)
 
-                        i.setType("message/rfc822")
+                        intentEmail.setType("message/rfc822")
 
-                        context.startActivity(Intent.createChooser(i,"Choose an Email client : "))
+                        context.startActivity(Intent.createChooser(intentEmail,"Choose an Email client : "))
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
