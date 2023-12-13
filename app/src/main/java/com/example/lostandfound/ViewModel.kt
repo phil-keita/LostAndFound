@@ -444,34 +444,48 @@ class LafViewModel: ViewModel(){
 
     //gets the posts from firebase
     private fun getConversations() {
-        Firebase.firestore.collection(DataToDB.USERS).document(Firebase.auth.currentUser?.uid.toString())
+        Firebase.firestore.collection(DataToDB.USERS)
+            .document(Firebase.auth.currentUser?.uid.toString())
             .addSnapshotListener { value, e ->
                 if (e != null) {
-                    Log.w(FoundPost.TAG, "Listen failed.", e)
+                    Log.w(Conversation.TAG, "Listen failed.", e)
                     return@addSnapshotListener
                 }
-                if (value != null && value.exists()) {
+                if (value != null) {
                     var list = mutableListOf<Map<String, Any>>()
-                    //var convos: List<DocumentReference> = value.getField(DataToDB.CONVERSATIONS)!!
-                    var convos: List<DocumentReference> = value.getField(DataToDB.CONVERSATIONS) as? List<DocumentReference> ?: listOf()
-                    for(convo in convos){
-                        convo
-                            .addSnapshotListener{ value , e ->
-                                if (e != null) {
-                                    Log.w(FoundPost.TAG, "Listen failed.", e)
-                                    return@addSnapshotListener
+                    var user_info: Map<String, Any>? = value.data
+                    Log.d("Init Debug", user_info.toString())
+                    if(user_info != null){
+                        Log.d("Init Debug","Current user info loaded")
+                        var convo_list = user_info[DataToDB.CONVERSATIONS] as List<DocumentReference>
+                        Log.d("Init Debug",convo_list.toString())
+                        for(convo in convo_list){
+                            convo
+                                .addSnapshotListener{ value , e ->
+                                    if (e != null) {
+                                        Log.w(FoundPost.TAG, "Listen failed.", e)
+                                        return@addSnapshotListener
+                                    }
+                                    if (value != null){
+                                        Log.d("Init Debug","Conversation Loaded")
+                                        var data = value.data
+                                        Log.d("Init Debug",data.toString())
+                                        list.add(data!!)
+                                    }
                                 }
-                                if (value != null){
-                                    list.add(value.data!!)
-                                }
-                            }
+                        }
+                        updateConversations(list)
+                    }else{
+                        Log.d("Init Debug","Current user info is empty")
                     }
-                    updateConversations(list)
+                }else{
+                    Log.d("Init Debug","value is  empty")
                 }
             }
     }
 
     private fun updateConversations(list: MutableList<Map<String, Any>>) {
         _conversations.value = list.asReversed()
+        Log.d("Init Debug", "conversation init: "+_conversations.value.toString())
     }
 }
