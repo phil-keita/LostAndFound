@@ -382,14 +382,17 @@ fun foundPostCreationForm(
                 Text("Cancel")
             }
             Button(onClick = {
-                if (item.isNotEmpty() && additionalInfo.isNotEmpty() && location.isNotEmpty() && imgBitmap != null) {
+                if (isOther){
+                    location = otherLocation
+                }
+                if (item.isNotEmpty() && additionalInfo.isNotEmpty() && imgBitmap != null) {
                     var imgRef = VM.updateFoundPostImage(imgBitmap!!)
                     VM.updateFoundPost(
                         hashMapOf(
                             FoundPost.ITEM to item,
                             FoundPost.ADDITIONAL_INFO to additionalInfo,
                             FoundPost.LOCATION to GeoPoint(markerState.position.latitude, markerState.position.longitude),
-                            FoundPost.LOCATION_NAME to if (isOther) otherLocation else location,
+                            FoundPost.LOCATION_NAME to if (location != "") location else "Unknown",
                             FoundPost.IMG_SRC to imgRef
                         )
                     )

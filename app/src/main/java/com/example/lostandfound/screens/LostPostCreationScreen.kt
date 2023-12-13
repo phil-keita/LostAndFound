@@ -185,7 +185,8 @@ fun lostPostCreationForm(
             modifier = Modifier
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically){
-            Checkbox(checked = unknown, onCheckedChange = {unknown = it})
+            Checkbox(checked = unknown, onCheckedChange = {unknown = it
+            isOther = false})
             Text("Unknown")
         }
 
