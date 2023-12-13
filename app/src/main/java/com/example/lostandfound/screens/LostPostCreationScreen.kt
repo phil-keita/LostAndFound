@@ -130,6 +130,7 @@ fun lostPostCreationForm(
             OutlinedTextField(
                 value = location,
                 onValueChange = {},
+                enabled = !unknown,
                 readOnly = true,
                 label = { Text(text = "Location") },
                 leadingIcon = { Icon(painterResource(id = R.drawable.baseline_location_on_24),contentDescription = null) },
@@ -151,7 +152,8 @@ fun lostPostCreationForm(
                             location = loc[Location.LOCATION_NAME] as String
                             isOther = false
                             expanded = false
-                        })
+                        },
+                        enabled = !unknown)
                     Divider()
                 }
                 DropdownMenuItem(
@@ -160,7 +162,8 @@ fun lostPostCreationForm(
                         location = "Other"
                         expanded = false
                         isOther = true
-                    })
+                    },
+                    enabled = !unknown)
             }
         }
         // Other location TextField
@@ -209,6 +212,9 @@ fun lostPostCreationForm(
                 Text("Cancel")
             }
             Button(onClick = {
+                if(isOther){
+                    location = otherLocation
+                }
                 if (item.isNotEmpty() && description.isNotEmpty() && location.isNotEmpty() && timeframe.isNotEmpty()) {
                     VM.updateLostPost(
                         hashMapOf(
