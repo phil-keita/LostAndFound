@@ -44,6 +44,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
 import java.util.concurrent.CancellationException
+import java.util.concurrent.CountDownLatch
 
 
 class LafViewModel: ViewModel(){
@@ -275,6 +276,7 @@ class LafViewModel: ViewModel(){
     private fun getMessages(convoIndex: Int) {
         var convo: Map<String, Any>? = _conversations.value?.get(convoIndex)
         if (convo != null){
+            Log.d("MessageGET", "Convo with index $convoIndex is not null")
             val docRef: List<DocumentReference> = convo[Conversation.MESSAGES] as List<DocumentReference>
             val list = emptyList<Map<String, Any>>().toMutableList()
             for(ref in docRef){
@@ -284,40 +286,29 @@ class LafViewModel: ViewModel(){
                             Log.w(LAFMessage.TAG, "Listen failed.", e)
                             return@addSnapshotListener
                         }
-
                         if (value != null){
-                            list.add(value.data!!)
+                            Log.d("MessageGET", "Message document retrieved")
+                            var message: Map<String, Any>? = value.data
+                            if (message != null){
+                                Log.d("MessageGET", "Message document not null. Adding to list")
+                                list.add(message)
+                                updateMessages(list)
+                            }else{
+                                Log.d("MessageGET", "Message was null :(")
+                            }
                         }
                     }
             }
-            updateMessages(list)
+
+        }else{
+            Log.d("MessageGET", "Convo with index $convoIndex is null")
         }
-//        Firebase.firestore.collection(LAFMessage.MESSAGES)
-//            .orderBy(LAFMessage.SENT_ON)
-//            .addSnapshotListener { value, e ->
-//                if (e != null) {
-//                    Log.w(LAFMessage.TAG, "Listen failed.", e)
-//                    return@addSnapshotListener
-//                }
 //
-//                val list = emptyList<Map<String, Any>>().toMutableList()
-//
-//                if (value != null) {
-//                    for (doc in value) {
-//                        val data = doc.data
-//                        data[LAFMessage.IS_CURRENT_USER] =
-//                            Firebase.auth.currentUser?.uid.toString() == data[LAFMessage.SENT_BY].toString()
-//
-//                        list.add(data)
-//                    }
-//                }
-//
-//                updateMessages(list)
-//            }
     }
     //Update the list after getting the details from firestore
     private fun updateMessages(list: MutableList<Map<String, Any>>) {
         _messages.value = list.asReversed()
+        Log.d("MessageGET", "messages updated: "+_messages.value.toString())
     }
 
 
@@ -412,6 +403,7 @@ class LafViewModel: ViewModel(){
 
     init {
         getConversations()
+
     }
 
     /**
@@ -460,7 +452,6 @@ class LafViewModel: ViewModel(){
                         var convo_list = user_info[DataToDB.CONVERSATIONS]
                         if(convo_list !=null){
                             val convoListAsDocRefs = convo_list as List<DocumentReference>
-
                             Log.d("Init Debug",convoListAsDocRefs.toString())
                             for(convo in convoListAsDocRefs){
                                 convo
@@ -474,15 +465,16 @@ class LafViewModel: ViewModel(){
                                             var data = value.data
                                             Log.d("Init Debug",data.toString())
                                             list.add(data!!)
+                                            Log.d("Init Debug","list: "+list.toString())
+                                            updateConversations(list)
                                         }
                                     }
+
                             }
-                            updateConversations(list)
+
                         }else{
                             Log.d("Init Debug", "convo_list is empty")
                         }
-
-
                     }else{
                         Log.d("Init Debug","Current user info is empty")
                     }
@@ -494,6 +486,7 @@ class LafViewModel: ViewModel(){
 
     private fun updateConversations(list: MutableList<Map<String, Any>>) {
         _conversations.value = list.asReversed()
-        Log.d("Init Debug", "conversation init: "+_conversations.value.toString())
+        Log.d("Init Debug", "conversation updated init: "+_conversations.value.toString() + list.asReversed().toString())
+        getMessages(0)
     }
 }
