@@ -5,7 +5,7 @@ and will likely require further research on your own.
 1. Create a Firebase Project
 2. Link project with Android Stuido
 3. Make sure you link your SHA-1 cert from android studio to your firebase project
-4. "Build" Authentication and Firestore Database
+4. "Build" Authentication and Firestore Database in Firebase
 
 
 CONFIG NOTES TO SAVE TIME 
