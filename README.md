@@ -1,5 +1,5 @@
-Screenshots from application (Pixel 6a)
-![photo_2023-12-30_15-14-01](https://github.com/phil-keita/LostAndFound/assets/68978948/2193abfb-56bf-4a82-944e-7a6e61a3fbe5)
+################Screenshots from application (Pixel 6a)################
+<img src = "photo_2023-12-30_15-14-01](https://github.com/phil-keita/LostAndFound/assets/68978948/2193abfb-56bf-4a82-944e-7a6e61a3fbe5" width=30% height=30%>
 
 ![photo_2023-12-30_15-13-58](https://github.com/phil-keita/LostAndFound/assets/68978948/3860a222-a896-45f9-9795-500f8606bdc9)
 
@@ -21,13 +21,14 @@ Screenshots from application (Pixel 6a)
 
 ![photo_2023-12-30_15-13-42](https://github.com/phil-keita/LostAndFound/assets/68978948/0d284852-b74f-48f7-a982-f086a2e403be)
 
-![photo_2023-12-30_15-13-42](https://github.com/phil-keita/LostAndFound/assets/68978948/386e40bd-9c68-48e9-95f3-cabec5053209)
+![photo_2023-12-30_15-13-41](https://github.com/phil-keita/LostAndFound/assets/68978948/065e5d25-ddd1-494e-ae3f-ff7abc435510)
 
-![photo_2023-12-30_15-13-42](https://github.com/phil-keita/LostAndFound/assets/68978948/bb7d9cdd-58a0-4cce-8383-bf53b025942a)
+![photo_2023-12-30_15-13-39](https://github.com/phil-keita/LostAndFound/assets/68978948/84ca1973-366c-4646-8461-8d019e93efbe)
 
-![photo_2023-12-30_15-13-42](https://github.com/phil-keita/LostAndFound/assets/68978948/21351a9f-3566-457f-ab2b-f0176fc9a887)
+![photo_2023-12-30_15-13-36](https://github.com/phil-keita/LostAndFound/assets/68978948/346e56d9-cd90-40e2-adc5-196485c79815)
 
-![photo_2023-12-30_15-13-42](https://github.com/phil-keita/LostAndFound/assets/68978948/72afd568-30e8-4dff-9aca-f9151f92fd8a)
+![photo_2023-12-30_15-13-24](https://github.com/phil-keita/LostAndFound/assets/68978948/8b338f31-8273-4635-91d0-a0c61189582e)
+
 
 If you plan to clone this project. The following changes need to occur. These steps are oversimplified 
 and will likely require further research on your own. 
